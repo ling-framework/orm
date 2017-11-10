@@ -19,11 +19,14 @@ class Model implements Orm {
     public function fetch(string $sql, array $params, bool $isAll = null) {
         return $this->orm->fetch($sql, $params, $isAll);
     }
-    public function fetchAll(string $sql, $params) {
+    public function fetchAll(string $sql, array $params) {
         return $this->orm->fetch($sql, $params, true);
     }
-    public function exec(string $sql, array $params) {
-        $this->orm->exec($sql, $params);
+    public function fetchArray(string $sql, array $params) {
+        return $this->orm->fetchArray($sql, $params);
+    }
+    public function exec(string $sql, array $params) : bool {
+        return $this->orm->exec($sql, $params);
     }
     public function lastInsertId() : int {
         return $this->orm->lastInsertId();
@@ -42,6 +45,12 @@ class Model implements Orm {
     }
     public function rollBack() : bool {
         return $this->orm->rollBack();
+    }
+    public function errorInfo() : array {
+        return $this->orm->errorInfo();
+    }
+    public function errorCode() {
+        return $this->orm->errorCode();
     }
     public function where(string $column, $comparator = null, $value = null) {
         $this->orm->where($column, $comparator, $value);

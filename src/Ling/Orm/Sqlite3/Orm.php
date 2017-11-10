@@ -6,6 +6,8 @@ use function \Ling\config as config;
 
 class Orm implements \Ling\Orm\Common\Orm {
 
+    const OPTION_CLASS = 1;
+    const OPTION_ASSOC = 8;
 
     public $tableName;
     public $pk;
@@ -30,7 +32,7 @@ class Orm implements \Ling\Orm\Common\Orm {
     public function __construct(string $className)
     {
         $this->className = $className;
-        $this->pdo = config('orm.pdo'); // maybe we need to throw error, when pdo is null
+        $this->pdo = config('orm.pdo');
     }
 
     protected function initVars() {
@@ -58,7 +60,18 @@ class Orm implements \Ling\Orm\Common\Orm {
         return $rows;
     }
 
-    public function exec(string $sql, array $params)
+    public function fetchArray(string $sql, array $params)
+    {
+        $this->statement = $this->pdo->prepare($sql);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $this->statement->setFetchMode(\PDO::FETCH_ASSOC);
+        $this->statement->execute($params);
+        $rows = $this->statement->fetchAll();
+        $this->statement->closeCursor();
+        return $rows;
+    }
+
+    public function exec(string $sql, array $params) : bool
     {
         $this->statement = $this->pdo->prepare($sql);
         return $this->statement->execute($params);
@@ -94,7 +107,15 @@ class Orm implements \Ling\Orm\Common\Orm {
         return $this->pdo->rollBack();
     }
 
+    public function errorInfo(): array
+    {
+        return $this->pdo->errorInfo();
+    }
 
+    public function errorCode()
+    {
+        return $this->pdo->errorCode() || $this->statement->errorCode();
+    }
 
     public function where(string $column, $comparator = null, $value = null)
     {

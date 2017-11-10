@@ -10,6 +10,9 @@ namespace Ling\Orm\Sqlite3;
 
 class Model extends \Ling\Orm\Common\Model {
 
+    /** @var Orm Orm */
+    protected $orm;
+
     public function __construct()
     {
         $this->orm = new Orm(get_class($this));

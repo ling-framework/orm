@@ -23,13 +23,16 @@ interface Orm {
 
     // PDO function wrapper
     public function fetch(string $sql, array $params, bool $isAll = null);
-    public function exec(string $sql, array $params);
+    public function fetchArray(string $sql, array $params);
+    public function exec(string $sql, array $params) : bool;
     public function lastInsertId() : int;
     public function rowCount() : int;
     public function debugDumpParams() : bool;
     public function beginTransaction() : bool;
     public function commit() : bool;
     public function rollBack() : bool;
+    public function errorInfo() : array;
+    public function errorCode();
 
     public function where(string $column, $comparator = null, $value = null);
     public function whereRaw($raw, $value = null);
