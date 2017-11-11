@@ -8,12 +8,14 @@
 
 namespace Ling\Orm\Common;
 
-class Model implements Orm {
+class Model {
     public $rowNumber; // for pagination
     public $totalCount; // for pagination
 
     /** @var $orm Orm */
     protected $orm;
+
+    public function init() {}
 
     // interface for separating model to orm
     public function fetch(string $sql, array $params, bool $isAll = null) {
@@ -25,7 +27,7 @@ class Model implements Orm {
     public function fetchArray(string $sql, array $params) {
         return $this->orm->fetchArray($sql, $params);
     }
-    public function exec(string $sql, array $params) : bool {
+    public function exec(string $sql, array $params = []) : bool {
         return $this->orm->exec($sql, $params);
     }
     public function lastInsertId() : int {
@@ -120,7 +122,7 @@ class Model implements Orm {
         return $this->orm->selectChunk($count, $func);
     }
     public function save() {
-        $this->orm->save();
+        $this->orm->save($this);
         return $this;
     }
     public function increment($column, $num = null){

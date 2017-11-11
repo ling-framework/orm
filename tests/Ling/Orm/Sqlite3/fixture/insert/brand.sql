@@ -1,11 +1,3 @@
-CREATE TABLE brand (
- seq integer PRIMARY KEY,
- distillery_seq integer NOT NULL,
- name text NOT NULL,
- created_at text NOT NULL,
- updated_at text NOT NULL
-)
-
 insert into brand values
 (1, 1, 'laphroaig', DateTime('now'), DateTime('now')),
 (2, 2, 'edradour', DateTime('now'), DateTime('now')),

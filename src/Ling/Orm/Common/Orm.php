@@ -60,7 +60,7 @@ interface Orm {
     public function selectCount(); // don't reset
     public function selectChunk(int $count, callable $func);
 
-    public function save(); // insert or update
+    public function save($model); // insert or update
     public function increment($column, $num = null); // partially update
     public function delete();
     public function reuse(); // use condition again

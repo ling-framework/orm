@@ -1,8 +1,7 @@
-CREATE TABLE distillery (
+CREATE TABLE bottler_brand (
  seq integer PRIMARY KEY,
+ bottler_seq integer NOT NULL,
  name text NOT NULL,
- country text NOT NULL,
- region text,
  created_at text NOT NULL,
  updated_at text NOT NULL
-);
+)

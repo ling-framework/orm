@@ -3,7 +3,7 @@
          bootstrap="vendor/autoload.php"
          strict="true"
          verbose="true">
- <testsuite name="Ling Orm Common test">
+ <testsuite name="Ling Orm Orm test">
   <directory suffix="Test.php">./tests/Ling/</directory>
  </testsuite>
  <filter>

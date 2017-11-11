@@ -6,9 +6,6 @@ use function \Ling\config as config;
 
 class Orm implements \Ling\Orm\Common\Orm {
 
-    const OPTION_CLASS = 1;
-    const OPTION_ASSOC = 8;
-
     public $tableName;
     public $pk;
     public $columns = array();
@@ -114,7 +111,11 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     public function errorCode()
     {
-        return $this->pdo->errorCode() || $this->statement->errorCode();
+        $errorCode = $this->pdo->errorCode();
+        if (!$errorCode) {
+            $errorCode = $this->statement->errorCode();
+        }
+        return $errorCode ;
     }
 
     public function where(string $column, $comparator = null, $value = null)
@@ -216,9 +217,60 @@ class Orm implements \Ling\Orm\Common\Orm {
         // TODO: Implement selectChunk() method.
     }
 
-    public function save()
+    public function save($model)
     {
-        // TODO: Implement save() method.
+        $columns = array();
+        $values = array();
+        $sets = array();
+        $params = array();
+
+        if ($this->pk && $model->{$this->pk}) { // update
+            foreach ($this->columns as $column => $original_column) {
+                if ($column === $this->pk || $column === $this->createdAtField) {
+                    continue;
+                }
+                if ($column === $this->updatedAtField) {
+                    $sets[] = $original_column . "=DateTime('now')";
+                } else {
+                    $sets[] = $original_column . '=:' . $column;
+                    $params[$column] = $model->{$column};
+                }
+            }
+            $params[$this->pk] = $model->{$this->pk};
+            $sql = 'UPDATE ' . $this->tableName . ' SET ' . implode(', ', $sets) . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
+            $this->exec($sql, $params);
+            if ($this->updatedAtField) {
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $model->{$this->pk}, [] );
+                $model->{$this->updatedAtField} = $fetched->{$this->columns[$this->updatedAtField]};
+            }
+
+        } else {
+            foreach ($this->columns as $column => $original_column) {
+                if ($column === $this->createdAtField || $column === $this->updatedAtField) {
+                    $values[] = "DateTime('now')";
+                } else if ($column === $this->pk || $model->{$column} === null) {
+                    continue;
+                } else {
+                    $values[] = ':' . $column;
+                    $params[$column] = $model->{$column};
+                }
+                $columns[] = $original_column;
+
+            }
+            $sql = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $columns). ') VALUES (' . implode(', ', $values). ')';
+            #error_log($sql);
+            #error_log(join(", ", $params));
+            // we need some error handler here
+            $this->exec($sql, $params);
+            $model->{$this->pk} = $this->lastInsertId();
+            if ($this->createdAtField) {
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $model->{$this->pk}, [] );
+                $model->{$this->createdAtField} = $fetched->{$this->columns[$this->createdAtField]};
+                if ($this->updatedAtField) {
+                    $model->{$this->updatedAtField} = $model->{$this->createdAtField};
+                }
+            }
+        }
     }
 
     public function increment($column, $num = null)

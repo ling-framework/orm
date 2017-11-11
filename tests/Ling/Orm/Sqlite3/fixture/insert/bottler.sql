@@ -1,11 +1,3 @@
-CREATE TABLE bottler (
- seq integer PRIMARY KEY,
- name text NOT NULL,
- country text NOT NULL,
- created_at text NOT NULL,
- updated_at text NOT NULL
-)
-
 insert into bottler values
 (1, 'adelphi', 'uk', DateTime('now'), DateTime('now')),
 (2, 'cadenhead', 'uk', DateTime('now'), DateTime('now')),
