@@ -3,6 +3,7 @@ namespace Ling\Orm\Sqlite3;
 
 use Ling\Orm\Common\Join;
 use function \Ling\config as config;
+use Ling\Orm\Common\Paginate;
 
 class Orm implements \Ling\Orm\Common\Orm {
 
@@ -249,7 +250,7 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     public function selectCount()
     {
-        $sqlFroms = sqlFroms($this->tableName);
+        $sqlFroms = sqlFroms($this->tableName, $this->joins, $this->prefixedColumns);
         $sqlWhere = sqlWhere($this->vars['wheres']);
         $sql = 'SELECT count(*) AS totalCount  FROM ' . $sqlFroms . $sqlWhere;
         return $this->fetch($sql, $this->vars['params'])->totalCount;
@@ -374,7 +375,7 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     private function generateSelectSql() {
         $sqlColumns = sqlColumns($this->prefixedColumns);
-        $sqlFroms = sqlFroms($this->tableName);
+        $sqlFroms = sqlFroms($this->tableName, $this->joins, $this->prefixedColumns);
         $sqlWhere = sqlWhere($this->vars['wheres']);
         $sqlGroupBy = sqlGroupBy($this->vars['groupBys']);
         $sqlOrderBy = sqlOrderBy($this->vars['orderBys']);
@@ -384,6 +385,25 @@ class Orm implements \Ling\Orm\Common\Orm {
         return $sql;
     }
 
+    public function paginate(Paginate $paginate) : Paginate
+    {
+        $this->limit($paginate->startAt, $paginate->paginationSize);
+        $totalCount = $this->selectCount();
+        $paginate->setTotalCount($totalCount);
+        $sql = $this->generateSelectSql();
+        $paginate->setList($this->fetch($sql, $this->vars['params'], true));
+        return $paginate;
+    }
+
+    public function plainObject()
+    {
+        $obj = array();
+        $columns = $this->prefixedColumns;
+//        foreach ($columns as $key => $value) {
+//            if (!in_array($key, $this->orm->jsonExcludes)) $obj[$key] = $this->$key;
+//        }
+        return (object)$obj;
+    }
 }
 
 
@@ -399,22 +419,24 @@ function sqlColumns(array $prefixedColumns) {
 }
 
 
-function sqlFroms($tableName) {
+function sqlFroms($tableName, array $joins, $prefixedColumns) : string
+{
     $sqlFroms = array($tableName . ' as a ');
-//    if (count($joins) > 0) {
-//        foreach($joins as $join) {
-//            $ons = array();
-//            foreach ($join->conditions as $cond) {
-//                $ons[] = getPrefixedColumn($prefixedColumns, $cond[0]) . ' ' . $cond[1] . ' ' . getPrefixedColumn($cond[2]);
-//            }
-//            $sqlFroms[] = $join->joinType . ' JOIN ' . $join->tableName . ' AS ' . $join->prefix . ' ON ' . implode(' AND ', $ons);
-//        }
-//    }
+    if (count($joins) > 0) {
+        foreach($joins as $join) {
+            $ons = array();
+            foreach ($join->conditions as $cond) {
+                $ons[] = $prefixedColumns[$cond[0]] . ' ' . $cond[1] . ' ' . $prefixedColumns[$cond[2]];
+            }
+            $sqlFroms[] = $join->joinType . ' JOIN ' . $join->tableName . ' AS ' . $join->prefix . ' ON ' . implode(' AND ', $ons);
+        }
+    }
     return implode(' ', $sqlFroms);
 
 }
 
-function sqlGroupBy(array $groupBys) {
+function sqlGroupBy(array $groupBys) : string
+{
     $sql = '';
     if (count($groupBys) > 0) { // group by doesn't require prefix
         $sql = ' GROUP BY ' . implode(', ', $groupBys);
@@ -422,7 +444,8 @@ function sqlGroupBy(array $groupBys) {
     return $sql;
 }
 
-function sqlOrderBy(array $orderBys) {
+function sqlOrderBy(array $orderBys) : string
+{
     $sql = '';
     if (count($orderBys) > 0) { // order by doesn't require prefix
         $orders = array();
@@ -434,7 +457,8 @@ function sqlOrderBy(array $orderBys) {
     return $sql;
 }
 
-function sqlWhere($wheres) {
+function sqlWhere($wheres) : string
+{
     $sql = '';
     if (count($wheres) > 0) {
         $sql = ' WHERE ' . implode(' ', $wheres);
@@ -442,7 +466,8 @@ function sqlWhere($wheres) {
     return $sql;
 }
 
-function sqlLimit($limits) {
+function sqlLimit($limits) : string
+{
     $sql = '';
     if (count($limits) > 0) { // only for sql server 2012+
         $sql = ' LIMIT ' . $limits[0] . ', ' . $limits[1];

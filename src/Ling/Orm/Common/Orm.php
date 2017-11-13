@@ -67,9 +67,8 @@ interface Orm {
     public function increment($column, $num = 1); // partially update
     public function delete();
     public function reuse(); // use condition again
-
-
-    // public function paginate(BasePaginate $paginate);
-    // public function plainObject();
+    public function join(Join $join);
+    public function paginate(Paginate $paginate);
+    public function plainObject();
 
 }

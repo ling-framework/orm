@@ -139,20 +139,30 @@ class Model {
         return $this;
     }
 
+    /**
+     * @param $join Join
+     * @return Model
+     */
+    public function join(Join $join) : Model
+    {
+        $this->orm->join($join);
+        return $this;
+    }
+
+    public function paginate(Paginate $paginate) {
+        $this->orm->paginate($paginate);
+        return $this;
+    }
+
+    public function plainObject() {
+        return array();
+    }
 
 
     // public function copy($obj){
     //     foreach ($this->orm->prefixedColumns as $key => $val) {
     //         if (property_exists($obj, $key)) $this->$key = $obj->$key;
     //     }
-    // }
-    /**
-     * @param $join BaseJoin
-     * @return BaseModel
-     */
-    // public function join(BaseJoin $join){
-    //     $this->orm->join($join);
-    //     return $this;
     // }
 
 }

@@ -1,6 +1,10 @@
 <?php
 namespace Ling\Orm\Common;
 
+define('PAGINATE_DEFAULT_CURRENT_PAGE', 10);
+define('PAGINATE_DEFAULT_LIST_SIZE', 10);
+define('PAGINATE_DEFAULT_PAGINATION_SIZE', 5);
+
 abstract class Paginate { // provide improved pagination
     // input for pagination
     public $currentPage;
@@ -41,15 +45,15 @@ abstract class Paginate { // provide improved pagination
     }
     public function plainObject() {
         $obj = array();
-        $obj["currentPage"] = $this->currentPage;
-        $obj["listSize"] = $this->listSize;
-        $obj["paginationSize"] = $this->paginationSize;
-        $obj["criteria"] = $this->criteria;
-        $obj["totalCount"] = $this->totalCount;
-        $obj["searchable"] = $this->searchable;
-        $obj["list"] = array();
+        $obj['currentPage'] = $this->currentPage;
+        $obj['listSize'] = $this->listSize;
+        $obj['paginationSize'] = $this->paginationSize;
+        $obj['criteria'] = $this->criteria;
+        $obj['totalCount'] = $this->totalCount;
+        $obj['searchable'] = $this->searchable;
+        $obj['list'] = array();
         foreach ($this->list as $item) {
-            array_push($obj["list"], $item->plainObject());
+            $obj['list'][] = $item->plainObject();
         }
         return (object)$obj;
     }
