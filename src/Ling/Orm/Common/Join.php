@@ -13,12 +13,12 @@ class Join {
         $this->tableName = $table;
         $this->columns = $columns;
         foreach($this->columns as $key => $val) {
-            $this->prefixedColumns[$key] = $this->prefix . "." . $val;
+            $this->prefixedColumns[$key] = $this->prefix . '.' . $val;
         }
         if ($onEqConditions) $this->onEq($onEqConditions[0], $onEqConditions[1]);
     }
     public function onEq($cond1, $cond2) {
-        $this->on($cond1, "=", $cond2);
+        $this->on($cond1, '=', $cond2);
         return $this;
     }
     public function on($cond1, $comparator,  $cond2) {

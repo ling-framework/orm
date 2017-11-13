@@ -22,6 +22,8 @@ interface Orm {
     // public function ifNull($column, $default);
 
     // PDO function wrapper
+    public function init(&$model);
+
     public function fetch(string $sql, array $params, bool $isAll = null);
     public function fetchArray(string $sql, array $params);
     public function exec(string $sql, array $params) : bool;
@@ -40,9 +42,10 @@ interface Orm {
     public function whereBetween($column, array $range);
     public function whereSearch($columns, $keyword); // like search
 
-    public function whereWrap($func);
+    public function whereWrap();
+    public function whereWrapEnd();
     public function whereOr(); // replace AND to OR, OR must not appear in the first place
-    public function whereNot();
+    public function whereNot(); // add Not
 
 //    public function eq($column, $value);
 //    public function neq($column, $value);
@@ -60,8 +63,8 @@ interface Orm {
     public function selectCount(); // don't reset
     public function selectChunk(int $count, callable $func);
 
-    public function save($model); // insert or update
-    public function increment($column, $num = null); // partially update
+    public function save(); // insert or update
+    public function increment($column, $num = 1); // partially update
     public function delete();
     public function reuse(); // use condition again
 

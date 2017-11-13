@@ -15,8 +15,9 @@ class Model extends \Ling\Orm\Common\Model {
 
     public function __construct()
     {
-        $this->orm = new Orm(get_class($this));
+        $this->orm = new Orm();
         $this->init();
+        $this->orm->init($this);
     }
 
 }

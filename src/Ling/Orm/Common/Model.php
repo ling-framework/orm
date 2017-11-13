@@ -74,8 +74,12 @@ class Model {
         $this->orm->whereSearch($columns, $keyword);
         return $this;
     }
-    public function whereWrap($func) {
-        $this->orm->whereWrap($func);
+    public function whereWrap() {
+        $this->orm->whereWrap();
+        return $this;
+    }
+    public function whereWrapEnd() {
+        $this->orm->whereWrapEnd();
         return $this;
     }
     public function whereOr() { // replace AND to OR, OR must not appear in the first place
@@ -122,16 +126,13 @@ class Model {
         return $this->orm->selectChunk($count, $func);
     }
     public function save() {
-        $this->orm->save($this);
-        return $this;
+        $this->orm->save();
     }
     public function increment($column, $num = null){
         $this->orm->increment($column, $num);
-        return $this;
     }
     public function delete() {
         $this->orm->delete();
-        return $this;
     }
     public function reuse() {
         $this->orm->reuse();

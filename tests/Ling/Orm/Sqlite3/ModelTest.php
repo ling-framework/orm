@@ -34,7 +34,7 @@ class ModelTest extends TestCase
             $this->dao->exec($sql);
         }
         foreach (glob(__DIR__ . '/fixture/insert/*.sql') as $filename) {
-            echo $filename . PHP_EOL;
+            //error_log($filename);
             $sql = file_get_contents($filename);
             $this->dao->exec($sql);
         }
@@ -58,13 +58,38 @@ class ModelTest extends TestCase
         $this->assertEquals($model->name, 'laphroaig');
         $this->assertNotNull($model->createdAt);
         $this->assertNotNull($model->updatedAt);
+        $this->assertEquals($model->createdAt, $model->updatedAt);
 
         $model->name = 'mortlach';
         $model->save();
 
         $this->assertEquals($model->seq, 9);
         $this->assertEquals($model->name, 'mortlach');
+        //$hash = password_hash('hello', PASSWORD_DEFAULT);
     }
+
+    public function testSelectDistillery() {
+        // select where shop is 1 or 3 and stock is more than 2 and price is over 3
+        // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
+        // ((stock = 3 and stock = 10) or (shop_seq = 1 or shop_seq = 3)) and price > 10000
+
+        $dao = new DistilleryModel();
+        $distillery = $dao->where('name', '=', 'laphroaig')->select();
+        $this->assertEquals($distillery->name, 'laphroaig');
+    }
+
+    public function testSelectAllDistillery() {
+        // select where shop is 1 or 3 and stock is more than 2 and price is over 3
+        // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
+        // ((stock = 3 and stock = 10) or (shop_seq = 1 or shop_seq = 3)) and price > 10000
+
+        $dao = new DistilleryModel();
+        $distilleries = $dao->where('seq', '>', 2)->selectAll();
+        $this->assertEquals($distilleries[0]->name, 'yamazaki');
+    }
+
+
+    // we need partial select and partial update, i.e. password field. we don't need to get password at all. password must be hashed in proper way.
 
     // we need to test join
 

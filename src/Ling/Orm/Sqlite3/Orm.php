@@ -8,31 +8,55 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     public $tableName;
     public $pk;
-    public $columns = array();
-    public $createdAtField = '';
-    public $updatedAtField = '';
-    public $updateFields = array();
+    public $columns;
+    public $createdAtField;
+    public $updatedAtField;
+    public $filters;
 
 
     /** @var $pdo \PDO */
-    protected $pdo;
+    private $pdo;
     /** @var $statement \PDOStatement */
-    protected $statement;
+    private $statement;
 
-    protected $className;
-    protected $paramSuffix;
-    protected $prefixedColumns = array();
-    protected $vars = array();
+    private $model;
+    private $className;
+    private $paramSuffix;
+    private $prefixedColumns;
+    private $vars;
     /** @var Join[]  */
-    protected $joins = array();
+    private $joins;
 
-    public function __construct(string $className)
+    private $useOr;
+    private $useNot;
+    private $firstWhere;
+
+    public function __construct()
     {
-        $this->className = $className;
         $this->pdo = config('orm.pdo');
+        $this->columns = array();
+        $this->filters = array();
+    }
+
+    public function init(&$model) {
+        $this->model = $model;
+        $this->className = get_class($model);
+        $this->useOr = false;
+        $this->useNot = false;
+        $this->firstWhere = true;
+        $this->prefixedColumns = array();
+        //$this->joins = array();
+
+        $this->paramSuffix = 0;
+        foreach($this->columns as $key => $val) {
+            $this->prefixedColumns[$key] = 'a.' . $val;
+        }
+        $this->initVars();
+
     }
 
     protected function initVars() {
+        $this->firstWhere = true;
         $this->vars = array(
             'fields' => array(), // custom fields (max(*) as maxVal, )
             'wheres' => array(),
@@ -120,15 +144,11 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     public function where(string $column, $comparator = null, $value = null)
     {
+        $operator = $this->operator();
         $this->paramSuffix++;
-        $valueKey = $column . "___" . $this->paramSuffix;
-        if ($comparator === "IN" || $comparator === "IS") {
-            $this->vars["wheres"][] = " AND " . getPrefixedColumn($this->prefixedColumns, $column) . " " . $comparator . " " . getPrefixedColumn($this->prefixedColumns, $value);
-        }
-        else {
-            $this->vars["wheres"][] = " AND " . getPrefixedColumn($this->prefixedColumns, $column) . " " . $comparator . " :" . $valueKey;
-            $this->vars["params"][$valueKey] = $value; // we must use pdo for preventing sql injection
-        }
+        $valueKey = $column . '___' . $this->paramSuffix;
+        $this->vars['wheres'][] = $operator . $this->getPrefixedColumn($column) . ' ' . $comparator . ' :' . $valueKey;
+        $this->vars['params'][$valueKey] = $value;
     }
 
 
@@ -139,92 +159,122 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     public function whereIn($column, array $items)
     {
-        // TODO: Implement whereIn() method.
+
     }
 
     public function whereBetween($column, array $range)
     {
-        // TODO: Implement whereBetween() method.
+
     }
 
     public function whereSearch($columns, $keyword)
     {
-        // TODO: Implement whereSearch() method.
+
     }
 
-    public function whereWrap($func)
+    public function whereWrap()
     {
-        // TODO: Implement whereWrap() method.
+        $this->vars['wheres'][] = $this->operator() . ' (';
+        return $this;
+    }
+    public function whereWrapEnd()
+    {
+        $this->vars['wheres'][] = ')';
+        return $this;
     }
 
     public function whereOr()
     {
-        // TODO: Implement whereOr() method.
+        $this->useOr = true;
+        return $this;
     }
 
     public function whereNot()
     {
-        // TODO: Implement whereNot() method.
+        $this->useNot = true;
+        return $this;
     }
 
     public function isNull($column)
     {
-        // TODO: Implement isNull() method.
+        $this->vars['wheres'][] = ' AND ' . $this->prefixedColumns[$column] . ' IS NULL ';
     }
 
     public function isNotNull($column)
     {
-        // TODO: Implement isNotNull() method.
+        $this->vars['wheres'][] = ' AND ' . $this->prefixedColumns[$column] . ' IS NOT NULL ';
     }
 
     public function orderBy($column, $order = 'DESC')
     {
-        // TODO: Implement orderBy() method.
+        $this->vars['orderBys'][] = array($this->getPrefixedColumn($column), $order);
     }
 
     public function groupBy($column, $having = null)
     {
-        // TODO: Implement groupBy() method.
+        $this->vars['groupBys'][] = $this->getPrefixedColumn($column);
     }
 
     public function limit($start, $length)
     {
-        // TODO: Implement limit() method.
+        $this->vars['limit'] = array($start, $length);
     }
 
     public function select()
     {
-        // TODO: Implement select() method.
+        $sql = $this->generateSelectSql();
+        $results = $this->fetch($sql, $this->vars['params']);        // reset variables for next use
+        $this->initVars();
+        return $results;
     }
 
     public function selectAll()
     {
-        // TODO: Implement selectAll() method.
+        $sql = $this->generateSelectSql();
+        $results = $this->fetch($sql, $this->vars['params'], true);        // reset variables for next use
+        $this->initVars();
+        return $results;
     }
 
-    public function selectObjects()
+    public function selectObjects() : array
     {
-        // TODO: Implement selectObjects() method.
+        $results = $this->selectAll();
+        $plainObjects = array();
+        foreach ($results as $obj) {
+            $plainObjects[] = $obj->plainObject();
+        }
+        return $plainObjects;
+
     }
 
     public function selectCount()
     {
-        // TODO: Implement selectCount() method.
+        $sqlFroms = sqlFroms($this->tableName);
+        $sqlWhere = sqlWhere($this->vars['wheres']);
+        $sql = 'SELECT count(*) AS totalCount  FROM ' . $sqlFroms . $sqlWhere;
+        return $this->fetch($sql, $this->vars['params'])->totalCount;
+
     }
 
     public function selectChunk(int $count, callable $func)
     {
-        // TODO: Implement selectChunk() method.
+        $totalCount = $this->selectCount();
+        for ($i = 0; $count*$i < $totalCount; $i++) {
+            $this->limit($i*$count, $count);
+            $sql = $this->generateSelectSql();
+            $models = $this->fetch($sql, $this->vars['params'], true);
+            $func($models, $i);
+        }
     }
 
-    public function save($model)
+    public function save()
     {
         $columns = array();
         $values = array();
         $sets = array();
         $params = array();
 
-        if ($this->pk && $model->{$this->pk}) { // update
+        if ($this->pk && $this->model->{$this->pk}) { // update
             foreach ($this->columns as $column => $original_column) {
                 if ($column === $this->pk || $column === $this->createdAtField) {
                     continue;
@@ -233,26 +283,26 @@ class Orm implements \Ling\Orm\Common\Orm {
                     $sets[] = $original_column . "=DateTime('now')";
                 } else {
                     $sets[] = $original_column . '=:' . $column;
-                    $params[$column] = $model->{$column};
+                    $params[$column] = $this->model->{$column};
                 }
             }
-            $params[$this->pk] = $model->{$this->pk};
+            $params[$this->pk] = $this->model->{$this->pk};
             $sql = 'UPDATE ' . $this->tableName . ' SET ' . implode(', ', $sets) . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
             $this->exec($sql, $params);
             if ($this->updatedAtField) {
-                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $model->{$this->pk}, [] );
-                $model->{$this->updatedAtField} = $fetched->{$this->columns[$this->updatedAtField]};
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
+                $this->model->{$this->updatedAtField} = $fetched->{$this->columns[$this->updatedAtField]};
             }
 
         } else {
             foreach ($this->columns as $column => $original_column) {
                 if ($column === $this->createdAtField || $column === $this->updatedAtField) {
                     $values[] = "DateTime('now')";
-                } else if ($column === $this->pk || $model->{$column} === null) {
+                } else if ($column === $this->pk || $this->model->{$column} === null) {
                     continue;
                 } else {
                     $values[] = ':' . $column;
-                    $params[$column] = $model->{$column};
+                    $params[$column] = $this->model->{$column};
                 }
                 $columns[] = $original_column;
 
@@ -262,69 +312,145 @@ class Orm implements \Ling\Orm\Common\Orm {
             #error_log(join(", ", $params));
             // we need some error handler here
             $this->exec($sql, $params);
-            $model->{$this->pk} = $this->lastInsertId();
+            $this->model->{$this->pk} = $this->lastInsertId();
             if ($this->createdAtField) {
-                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $model->{$this->pk}, [] );
-                $model->{$this->createdAtField} = $fetched->{$this->columns[$this->createdAtField]};
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
+                $this->model->{$this->createdAtField} = $fetched->{$this->columns[$this->createdAtField]};
                 if ($this->updatedAtField) {
-                    $model->{$this->updatedAtField} = $model->{$this->createdAtField};
+                    $this->model->{$this->updatedAtField} = $this->model->{$this->createdAtField};
                 }
             }
         }
     }
 
-    public function increment($column, $num = null)
+    public function increment($column, $num = 1)
     {
-        // TODO: Implement increment() method.
+        $original_column = $this->columns[$column];
+        $sql = 'UPDATE ' . $this->tableName . ' SET ' . $original_column . ' = ' . $original_column . ' + ' . $num . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
+        $this->exec($sql, []);
     }
 
     public function delete()
     {
-        // TODO: Implement delete() method.
+        $sql = 'DELETE FROM ' . $this->tableName . ' WHERE ' . $this->columns[$this->pk] . ' = :' . $this->pk;
+        $this->exec($sql, [$this->pk => $this->{$this->pk}]);
     }
 
     public function reuse()
     {
-        // TODO: Implement reuse() method.
+
+    }
+
+    public function join(Join $join) {
+        foreach ($join->columns as $key => $val) {
+            $this->prefixedColumns[$key] = $join->prefix . '.' . $val;
+        }
+        $this->joins[] = $join;
     }
 
 
+    private function operator() {
+        if ($this->firstWhere) {
+            $this->firstWhere = false;
+            $operator = '';
+        } else {
+            if ($this->useOr) {
+                $operator = ' OR ';
+                $this->useOr = false;
+            } else {
+                $operator = ' AND ';
+            }
+        }
+        if ($this->useNot) {
+            $operator .= ' NOT ';
+            $this->useNot = false;
+        }
+        return $operator;
+    }
 
+    private function getPrefixedColumn($column) {
+        return $this->prefixedColumns[$column] ?: $column;
+    }
+
+    private function generateSelectSql() {
+        $sqlColumns = sqlColumns($this->prefixedColumns);
+        $sqlFroms = sqlFroms($this->tableName);
+        $sqlWhere = sqlWhere($this->vars['wheres']);
+        $sqlGroupBy = sqlGroupBy($this->vars['groupBys']);
+        $sqlOrderBy = sqlOrderBy($this->vars['orderBys']);
+        $sqlLimit = sqlLimit($this->vars['limit']);
+        $sql = 'SELECT ' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere . $sqlGroupBy . $sqlOrderBy . $sqlLimit;
+#        error_log($sql);
+        return $sql;
+    }
 
 }
 
-function getPrefixedColumn($prefixedColumns, $column) {
-    return $prefixedColumns[$column] ? $prefixedColumns[$column] : $column;
-}
 
-
-function sqlFrom() {
-
-}
-
-function sqlColumns() {
-
-}
-
-function sqlGroupBy() {
+function sqlColumns(array $prefixedColumns) {
+    $sqlColumns = array();
+    $columns = array();
+    foreach ($prefixedColumns as $key => $val) {
+        $columns[] = $val . ' AS ' . $key;
+    }
+    $sqlColumns[] = implode(', ', $columns);
+    return implode(', ', $sqlColumns);
 
 }
 
-function sqlOrderBy() {
+
+function sqlFroms($tableName) {
+    $sqlFroms = array($tableName . ' as a ');
+//    if (count($joins) > 0) {
+//        foreach($joins as $join) {
+//            $ons = array();
+//            foreach ($join->conditions as $cond) {
+//                $ons[] = getPrefixedColumn($prefixedColumns, $cond[0]) . ' ' . $cond[1] . ' ' . getPrefixedColumn($cond[2]);
+//            }
+//            $sqlFroms[] = $join->joinType . ' JOIN ' . $join->tableName . ' AS ' . $join->prefix . ' ON ' . implode(' AND ', $ons);
+//        }
+//    }
+    return implode(' ', $sqlFroms);
 
 }
 
-function sqlWhere() {
-
+function sqlGroupBy(array $groupBys) {
+    $sql = '';
+    if (count($groupBys) > 0) { // group by doesn't require prefix
+        $sql = ' GROUP BY ' . implode(', ', $groupBys);
+    }
+    return $sql;
 }
 
-function sqlLimit() {
-
+function sqlOrderBy(array $orderBys) {
+    $sql = '';
+    if (count($orderBys) > 0) { // order by doesn't require prefix
+        $orders = array();
+        foreach ($orderBys as $orderBy) {
+            $orders[] = implode(' ', $orderBy);
+        }
+        $sql = ' ORDER BY ' . implode(', ', $orders);
+    }
+    return $sql;
 }
 
-function generateSelectSql() {
-
+function sqlWhere($wheres) {
+    $sql = '';
+    if (count($wheres) > 0) {
+        $sql = ' WHERE ' . implode(' ', $wheres);
+    }
+    return $sql;
 }
+
+function sqlLimit($limits) {
+    $sql = '';
+    if (count($limits) > 0) { // only for sql server 2012+
+        $sql = ' LIMIT ' . $limits[0] . ', ' . $limits[1];
+    }
+    return $sql;
+}
+
+
 
 function paginate() {
 
