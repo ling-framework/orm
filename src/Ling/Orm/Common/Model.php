@@ -58,36 +58,29 @@ class Model {
         $this->orm->where($column, $comparator, $value);
         return $this;
     }
-    public function whereRaw($raw, $value = null) {
-        $this->orm->whereRaw($raw, $value);
+    public function raw($raw, $value = null) {
+        $this->orm->raw($raw, $value);
         return $this;
     }
-    public function whereIn($column, array $items) {
-        $this->orm->whereIn($column, $items);
+    public function in($column, array $items) {
+        $this->orm->in($column, $items);
         return $this;
     }
-    public function whereBetween($column, array $range){
-        $this->orm->whereBetween($column, $range);
+    public function between($column, array $range){
+        $this->orm->between($column, $range);
         return $this;
     }
-    public function whereSearch($columns, $keyword){
-        $this->orm->whereSearch($columns, $keyword);
+    public function search($columns, $keyword){
+        $this->orm->search($columns, $keyword);
         return $this;
     }
-    public function whereWrap() {
-        $this->orm->whereWrap();
+
+    public function eq($column, $value) {
+        $this->orm->eq($column, $value);
         return $this;
     }
-    public function whereWrapEnd() {
-        $this->orm->whereWrapEnd();
-        return $this;
-    }
-    public function whereOr() { // replace AND to OR, OR must not appear in the first place
-        $this->orm->whereOr();
-        return $this;
-    }
-    public function whereNot() {
-        $this->orm->whereNot();
+    public function neq($column, $value) {
+        $this->orm->eq($column, $value);
         return $this;
     }
     public function isNull($column) {
@@ -96,6 +89,22 @@ class Model {
     }
     public function isNotNull($column) {
         $this->orm->isNotNull($column);
+        return $this;
+    }
+    public function wrap() {
+        $this->orm->wrap();
+        return $this;
+    }
+    public function wrapEnd() {
+        $this->orm->wrapEnd();
+        return $this;
+    }
+    public function opOr() { // replace AND to OR, OR must not appear in the first place
+        $this->orm->opOr();
+        return $this;
+    }
+    public function opNot() {
+        $this->orm->opNot();
         return $this;
     }
     public function orderBy($column, $order = 'DESC') {
@@ -133,10 +142,6 @@ class Model {
     }
     public function delete() {
         $this->orm->delete();
-    }
-    public function reuse() {
-        $this->orm->reuse();
-        return $this;
     }
 
     /**

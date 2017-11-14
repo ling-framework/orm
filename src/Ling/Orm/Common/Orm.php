@@ -15,15 +15,15 @@ interface Orm {
 
 
     // column function
-    // public function max($column = null); // default pk
-    // public function min($column = null); // default pk
-    // public function avg($column);
-    // public function sum($column);
-    // public function ifNull($column, $default);
+//    public function max($column = null); // default pk
+//    public function min($column = null); // default pk
+//    public function avg($column);
+//    public function sum($column);
+//    public function ifNull($column, $default);
 
-    // PDO function wrapper
     public function init(&$model);
 
+    // PDO function wrapper
     public function fetch(string $sql, array $params, bool $isAll = null);
     public function fetchArray(string $sql, array $params);
     public function exec(string $sql, array $params) : bool;
@@ -37,21 +37,20 @@ interface Orm {
     public function errorCode();
 
     public function where(string $column, $comparator = null, $value = null);
-    public function whereRaw($raw, $value = null);
-    public function whereIn($column, array $items);
-    public function whereBetween($column, array $range);
-    public function whereSearch($columns, $keyword); // like search
+    public function raw($raw, $value = null);
+    public function in($column, array $items);
+    public function between($column, array $range);
+    public function search($columns, $keyword); // like search
 
-    public function whereWrap();
-    public function whereWrapEnd();
-    public function whereOr(); // replace AND to OR, OR must not appear in the first place
-    public function whereNot(); // add Not
-
-//    public function eq($column, $value);
-//    public function neq($column, $value);
+    public function eq($column, $value);
+    public function neq($column, $value);
     public function isNull($column);
     public function isNotNull($column);
 
+    public function wrap();
+    public function wrapEnd();
+    public function opOr(); // replace AND to OR, OR must not appear in the first place
+    public function opNot(); // add Not
 
     public function orderBy($column, $order = 'DESC');
     public function groupBy($column, $having = null);
@@ -66,7 +65,7 @@ interface Orm {
     public function save(); // insert or update
     public function increment($column, $num = 1); // partially update
     public function delete();
-    public function reuse(); // use condition again
+
     public function join(Join $join);
     public function paginate(Paginate $paginate);
     public function plainObject();

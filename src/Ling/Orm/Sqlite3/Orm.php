@@ -28,9 +28,9 @@ class Orm implements \Ling\Orm\Common\Orm {
     /** @var Join[]  */
     private $joins;
 
-    private $useOr;
-    private $useNot;
-    private $firstWhere;
+    private $opOr;
+    private $opNot;
+    private $noOp;
 
     public function __construct()
     {
@@ -57,7 +57,9 @@ class Orm implements \Ling\Orm\Common\Orm {
     }
 
     protected function initVars() {
-        $this->firstWhere = true;
+        $this->noOp = true;
+        $this->opOr = false;
+        $this->opNot = false;
         $this->vars = array(
             'fields' => array(), // custom fields (max(*) as maxVal, )
             'wheres' => array(),
@@ -153,47 +155,44 @@ class Orm implements \Ling\Orm\Common\Orm {
     }
 
 
-    public function whereRaw($raw, $value = null)
+    public function raw($raw, $value = null)
     {
 
     }
 
-    public function whereIn($column, array $items)
+    public function in($column, array $items)
     {
 
     }
 
-    public function whereBetween($column, array $range)
+    public function between($column, array $range)
     {
 
     }
 
-    public function whereSearch($columns, $keyword)
+    public function search($columns, $keyword)
     {
 
     }
 
-    public function whereWrap()
+    public function wrap()
     {
         $this->vars['wheres'][] = $this->operator() . ' (';
-        return $this;
+        $this->noOp = true;
     }
-    public function whereWrapEnd()
+    public function wrapEnd()
     {
         $this->vars['wheres'][] = ')';
-        return $this;
     }
 
-    public function whereOr()
+    public function opOr()
     {
-        $this->useOr = true;
-        return $this;
+        $this->opOr = true;
     }
 
-    public function whereNot()
+    public function opNot()
     {
-        $this->useNot = true;
-        return $this;
+        $this->opNot = true;
     }
 
     public function isNull($column)
@@ -242,7 +241,7 @@ class Orm implements \Ling\Orm\Common\Orm {
         $results = $this->selectAll();
         $plainObjects = array();
         foreach ($results as $obj) {
-            $plainObjects[] = $obj->plainObject();
+            $plainObjects[] = $obj->plainObject(); // may we need it?
         }
         return $plainObjects;
 
@@ -337,11 +336,6 @@ class Orm implements \Ling\Orm\Common\Orm {
         $this->exec($sql, [$this->pk => $this->{$this->pk}]);
     }
 
-    public function reuse()
-    {
-
-    }
-
     public function join(Join $join) {
         foreach ($join->columns as $key => $val) {
             $this->prefixedColumns[$key] = $join->prefix . '.' . $val;
@@ -351,20 +345,20 @@ class Orm implements \Ling\Orm\Common\Orm {
 
 
     private function operator() {
-        if ($this->firstWhere) {
-            $this->firstWhere = false;
+        if ($this->noOp) {
+            $this->noOp = false;
             $operator = '';
         } else {
-            if ($this->useOr) {
+            if ($this->opOr) {
                 $operator = ' OR ';
-                $this->useOr = false;
+                $this->opOr = false;
             } else {
                 $operator = ' AND ';
             }
         }
-        if ($this->useNot) {
+        if ($this->opNot) {
             $operator .= ' NOT ';
-            $this->useNot = false;
+            $this->opNot = false;
         }
         return $operator;
     }
@@ -475,8 +469,3 @@ function sqlLimit($limits) : string
     return $sql;
 }
 
-
-
-function paginate() {
-
-}

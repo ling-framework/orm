@@ -1,25 +1,27 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ling\Orm\Sqlite3;
 
-
-class DistilleryModel extends Model {
+class StockModel extends Model {
     public $seq;
-    public $name;
-    public $country;
-    public $region;
+    public $bottleSeq;
+    public $shopSeq;
+    public $stock;
+    public $price;
     public $createdAt;
     public $updatedAt;
 
     public function init() {
-        $this->orm->tableName = 'distillery';
+        $this->orm->tableName = 'stock';
         $this->orm->pk = 'seq';
         $this->orm->columns = [
             'seq' => 'seq',
-            'name' => 'name',
-            'country' => 'country',
-            'region' => 'region',
+            'bottleSeq' => 'bottle_seq',
+            'shopSeq' => 'shop_seq',
+            'stock' => 'stock',
+            'price' => 'price',
             'createdAt' => 'created_at',
             'updatedAt' => 'updated_at'
         ];

@@ -89,6 +89,14 @@ class ModelTest extends TestCase
     }
 
 
+    public function testWrapOrNotStock() {
+        $dao = new StockModel();
+        $stocks = $dao->where('stock', '>', 3)
+            ->opOr()->wrap()->
+
+    }
+
+
     // we need partial select and partial update, i.e. password field. we don't need to get password at all. password must be hashed in proper way.
 
     // we need to test join
