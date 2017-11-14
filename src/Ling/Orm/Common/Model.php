@@ -115,7 +115,11 @@ class Model {
         $this->orm->groupBy($column, $having);
         return $this;
     }
-    public function limit($start, $length) {
+    public function limit($start, $length = null) {
+        if (!$length) {
+            $length = $start;
+            $start = 0;
+        }
         $this->orm->limit($start, $length);
         return $this;
     }

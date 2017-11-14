@@ -28,8 +28,11 @@ class Orm implements \Ling\Orm\Common\Orm {
     /** @var Join[]  */
     private $joins;
 
+    /** @var  $opOr bool */
     private $opOr;
+    /** @var  $opNot bool */
     private $opNot;
+    /** @var  $noOp bool */
     private $noOp;
 
     public function __construct()
@@ -46,7 +49,7 @@ class Orm implements \Ling\Orm\Common\Orm {
         $this->useNot = false;
         $this->firstWhere = true;
         $this->prefixedColumns = array();
-        //$this->joins = array();
+        $this->joins = array();
 
         $this->paramSuffix = 0;
         foreach($this->columns as $key => $val) {
@@ -175,6 +178,17 @@ class Orm implements \Ling\Orm\Common\Orm {
 
     }
 
+    public function eq($column, $value)
+    {
+        $this->where($column, '=', $value);
+    }
+
+    public function neq($column, $value)
+    {
+        $this->where($column, '!=', $value);
+    }
+
+
     public function wrap()
     {
         $this->vars['wheres'][] = $this->operator() . ' (';
@@ -241,7 +255,7 @@ class Orm implements \Ling\Orm\Common\Orm {
         $results = $this->selectAll();
         $plainObjects = array();
         foreach ($results as $obj) {
-            $plainObjects[] = $obj->plainObject(); // may we need it?
+            $plainObjects[] = $obj->plainObject(); // may we need it? because model is just a plain object
         }
         return $plainObjects;
 
@@ -375,7 +389,7 @@ class Orm implements \Ling\Orm\Common\Orm {
         $sqlOrderBy = sqlOrderBy($this->vars['orderBys']);
         $sqlLimit = sqlLimit($this->vars['limit']);
         $sql = 'SELECT ' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere . $sqlGroupBy . $sqlOrderBy . $sqlLimit;
-#        error_log($sql);
+        error_log($sql);
         return $sql;
     }
 
@@ -398,6 +412,7 @@ class Orm implements \Ling\Orm\Common\Orm {
 //        }
         return (object)$obj;
     }
+
 }
 
 

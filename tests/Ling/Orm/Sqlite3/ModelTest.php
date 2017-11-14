@@ -78,28 +78,68 @@ class ModelTest extends TestCase
         $this->assertEquals($distillery->name, 'laphroaig');
     }
 
-    public function testSelectAllDistillery() {
-        // select where shop is 1 or 3 and stock is more than 2 and price is over 3
-        // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
-        // ((stock = 3 and stock = 10) or (shop_seq = 1 or shop_seq = 3)) and price > 10000
-
+    public function testSelectAllLimitDistillery() {
         $dao = new DistilleryModel();
         $distilleries = $dao->where('seq', '>', 2)->selectAll();
         $this->assertEquals($distilleries[0]->name, 'yamazaki');
+
+        $distilleries = $dao->where('seq', '>', 2)->limit(5)->selectAll();
+        $this->assertCount(5, $distilleries);
+
+        $distilleries = $dao->where('seq', '>', 2)->limit(1, 2)->selectAll();
+        $this->assertCount(2, $distilleries);
+
     }
 
 
     public function testWrapOrNotStock() {
         $dao = new StockModel();
+
+        // stock > 3 or (shop_seq = 1 or shop_seq = 3) and price > 10000
         $stocks = $dao->where('stock', '>', 3)
-            ->opOr()->wrap()->
+            ->opOr()->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()
+            ->where('price', '>', 10000)->selectAll();
+        $this->assertCount(40, $stocks);
+
+
+        // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
+        $stocks = $dao->where('stock', '>', 3)
+            ->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()
+            ->where('price', '>', 10000)->selectAll();
+        $this->assertCount(11, $stocks);
+
+        // ((stock = 3 or stock = 10) and (shop_seq = 1 or shop_seq = 3)) and price > 10000
+        $stocks = $dao->wrap()->wrap()->eq('stock', 3)->opOr()->eq('stock', 10)->wrapEnd()
+            ->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()->wrapEnd()
+            ->where('price', '>', 10000)->selectAll();
+        $this->assertCount(8, $stocks);
+    }
+
+
+    public function testRawInBetweenSearch() {
+
+    }
+
+    public function testJoin() {
+
+    }
+
+    public function testPaginate() {
+
+    }
+
+    public function testSelectChunk() {
+
+    }
+
+    public function testIncrement() {
+
+    }
+
+    public function testPasswordSocialId() {
 
     }
 
 
-    // we need partial select and partial update, i.e. password field. we don't need to get password at all. password must be hashed in proper way.
 
-    // we need to test join
-
-    // and set files
 }
