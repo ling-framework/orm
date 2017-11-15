@@ -58,19 +58,19 @@ class Model {
         $this->orm->where($column, $comparator, $value);
         return $this;
     }
-    public function raw($raw, $value = null) {
-        $this->orm->raw($raw, $value);
+    public function whereRaw($raw, array $value = null) {
+        $this->orm->whereRaw($raw, $value);
         return $this;
     }
     public function in($column, array $items) {
         $this->orm->in($column, $items);
         return $this;
     }
-    public function between($column, array $range){
-        $this->orm->between($column, $range);
+    public function between($column, $start, $end){
+        $this->orm->between($column, $start, $end);
         return $this;
     }
-    public function search($columns, $keyword){
+    public function search(array $columns, $keyword){
         $this->orm->search($columns, $keyword);
         return $this;
     }

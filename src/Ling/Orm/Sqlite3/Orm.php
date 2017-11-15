@@ -64,7 +64,7 @@ class Orm implements \Ling\Orm\Common\Orm {
         $this->opOr = false;
         $this->opNot = false;
         $this->vars = array(
-            'fields' => array(), // custom fields (max(*) as maxVal, )
+            'fields' => array(), // custom fields (max(*) as maxVal)
             'wheres' => array(),
             'orderBys' => array(),
             'groupBys' => array(),
@@ -158,23 +158,50 @@ class Orm implements \Ling\Orm\Common\Orm {
     }
 
 
-    public function raw($raw, $value = null)
+    public function whereRaw($raw, array $value = null) // we don't have any settle down for usage of raw, we may another type of raw
     {
 
     }
 
     public function in($column, array $items)
     {
+        $operator = $this->operator();
+        $valueKeys = array();
+        foreach($items as $item) {
+            $this->paramSuffix++;
+            $valueKey = $column . '___' . $this->paramSuffix;
+            $valueKeys[] = $valueKey;
+            $this->vars['params'][$valueKey] = $item;
+        }
+        $this->vars['wheres'][] =  $operator . $this->getPrefixedColumn($column) . ' IN (' . implode(', ', $valueKeys) . ')';
+    }
+
+    public function between($column, $start, $end)
+    {
+        $operator = $this->operator();
+        $this->paramSuffix++;
+        $valueStartKey = $column . '___' . $this->paramSuffix;
+        $this->paramSuffix++;
+        $valueEndKey = $column . '___' . $this->paramSuffix;
+
+        $this->vars['wheres'][] = $operator . $this->getPrefixedColumn($column) . ' BETWEEN  :' . $valueStartKey . ' AND :' . $valueEndKey;
+        $this->vars['params'][$valueStartKey] = $start;
+        $this->vars['params'][$valueEndKey] = $end;
 
     }
 
-    public function between($column, array $range)
+    public function search(array $columns, $keyword)
     {
-
-    }
-
-    public function search($columns, $keyword)
-    {
+        $operator = $this->operator();
+        $valueKeys = array();
+        $likes = array();
+        foreach($columns as $column) {
+            $this->paramSuffix++;
+            $valueKey = 'keyword___' . $this->paramSuffix;
+            $likes[] = $this->getPrefixedColumn($column) . " LIKE CONCAT('%', :" . $valueKey . ", '%')";
+            $this->vars['params'][$valueKey] = $keyword;
+        }
+        $this->vars['wheres'][] =  $operator . ' (' . implode(' OR ', $likes) . ')';
 
     }
 

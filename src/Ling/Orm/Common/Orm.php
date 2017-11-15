@@ -37,10 +37,10 @@ interface Orm {
     public function errorCode();
 
     public function where(string $column, $comparator = null, $value = null);
-    public function raw($raw, $value = null);
+    public function whereRaw($raw, array $value = null);
     public function in($column, array $items);
-    public function between($column, array $range);
-    public function search($columns, $keyword); // like search
+    public function between($column, $start, $end);
+    public function search(array $columns, $keyword); // like search
 
     public function eq($column, $value);
     public function neq($column, $value);

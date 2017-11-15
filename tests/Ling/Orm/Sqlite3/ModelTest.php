@@ -116,7 +116,19 @@ class ModelTest extends TestCase
     }
 
 
-    public function testRawInBetweenSearch() {
+    public function testInBetweenSearch() {
+
+    }
+
+    public function testWhereRawBetweenSearch() {
+
+    }
+
+    public function testIncrement() {
+
+    }
+
+    public function testSelectChunk() {
 
     }
 
@@ -128,13 +140,6 @@ class ModelTest extends TestCase
 
     }
 
-    public function testSelectChunk() {
-
-    }
-
-    public function testIncrement() {
-
-    }
 
     public function testPasswordSocialId() {
 
