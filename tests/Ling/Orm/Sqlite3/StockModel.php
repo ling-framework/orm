@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Ling\Orm\Sqlite3;
+use Ling\Orm\Model;
 
 class StockModel extends Model {
     public $seq;

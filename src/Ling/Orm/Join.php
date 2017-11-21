@@ -1,5 +1,5 @@
 <?php
-namespace Ling\Orm\Common;
+namespace Ling\Orm;
 class Join {
     public $prefix = ''; // from b...
     public $tableName = ''; // table or inner select

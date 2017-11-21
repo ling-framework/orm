@@ -9,8 +9,10 @@ declare(strict_types=1);
 
 namespace Ling\Orm\Sqlite3;
 
+use Ling\Orm\Model;
+
 use PHPUnit\Framework\TestCase;
-use function Ling\config as config;
+use function Ling\config;
 
 include 'bootstrap.php';
 
@@ -19,31 +21,20 @@ include 'bootstrap.php';
 class ModelTest extends TestCase
 {
 
-    public $dao;
-
-
     public function setUp() {
-        $pdo = new \PDO('sqlite:whisky.sqlite3');
-        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        config(['orm.pdo' => $pdo]);
+        config(['orm.pdo' => pdo(':memory:')]);
 
-        $this->dao = new Model();
+        $dao = new Model();
 
         foreach (glob(__DIR__ . '/fixture/create/*.sql') as $filename) {
             $sql = file_get_contents($filename);
-            $this->dao->exec($sql);
+            $dao->exec($sql);
         }
         foreach (glob(__DIR__ . '/fixture/insert/*.sql') as $filename) {
             //error_log($filename);
             $sql = file_get_contents($filename);
-            $this->dao->exec($sql);
+            $dao->exec($sql);
         }
-
-    }
-
-    public function tearDown()
-    {
-        unlink('whisky.sqlite3');
     }
 
     public function testInsertUpdateDistillery() {
@@ -120,7 +111,7 @@ class ModelTest extends TestCase
 
     }
 
-    public function testWhereRawBetweenSearch() {
+    public function testWhereRaw() {
 
     }
 

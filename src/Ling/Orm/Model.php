@@ -6,7 +6,7 @@
  * Time: 11:17
  */
 
-namespace Ling\Orm\Common;
+namespace Ling\Orm;
 
 class Model {
     public $rowNumber; // for pagination
@@ -15,7 +15,14 @@ class Model {
     /** @var $orm Orm */
     protected $orm;
 
-    public function init() {}
+    public function __construct()
+    {
+        $this->orm = new Orm();
+        $this->init();
+        $this->orm->init($this);
+    }
+
+    public function init() {} // this must be overrided
 
     // interface for separating model to orm
     public function fetch(string $sql, array $params, bool $isAll = null) {
