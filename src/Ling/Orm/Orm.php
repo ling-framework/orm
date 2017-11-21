@@ -11,7 +11,10 @@ class Orm {
     public $columns = array();
     public $createdAtColumn;
     public $updatedAtColumn;
-    public $customColumns = array(); // custom columns i.e. max(seq)
+    public $encryptedColumns = array();
+    public $encryptFunc;
+    public $decryptFunc;
+    public $privateColumns = array();
 
 
     /** @var $pdo \PDO */
@@ -23,18 +26,13 @@ class Orm {
     private $className;
     private $paramSuffix;
     private $prefixedColumns;
+    private $customColumns = array(); // i.e. max(seq)
     private $vars;
     /** @var $joins Join[] */
     private $joins;
+    /** @var $privateMode bool */
+    private $privateMode = true; // do not show private column, default is true
 
-    // we may need partial update columns
-    // we may need partial select columns
-    // we may support encrypted columns or hashed columns or private columns
-    // partial vs encrypted, which one is good?
-    // i think encrypted is a good way. some customer want all the user data be encrypted
-    // also some hashed data will not need to read from db,
-    // just compare.. no select result, but update is available, and where is available
-    // how about private data? we want to hide some fields and read only when private mode.
 
     // we have to support private columns and encrypted columns -> this will be the end of support
 
