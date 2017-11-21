@@ -62,12 +62,16 @@ class Model {
     public function errorCode() {
         return $this->orm->errorCode();
     }
+    public function customColumn(string $column) {
+        $this->orm->customColumn($column);
+        return $this;
+    }
     public function where(string $column, $comparator = null, $value = null) {
         $this->orm->where($column, $comparator, $value);
         return $this;
     }
-    public function whereRaw($raw, array $value = null) {
-        $this->orm->whereRaw($raw, $value);
+    public function customWhere($where, array $value = null) {
+        $this->orm->customWhere($where, $value);
         return $this;
     }
     public function in($column, array $items) {

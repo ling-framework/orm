@@ -11,7 +11,7 @@ class Orm {
     public $columns = array();
     public $createdAtColumn;
     public $updatedAtColumn;
-    public $customColumns = array(); // add it to custom column
+    public $customColumns = array(); // custom columns i.e. max(seq)
 
 
     /** @var $pdo \PDO */
@@ -24,22 +24,26 @@ class Orm {
     private $paramSuffix;
     private $prefixedColumns;
     private $vars;
-    /** @var Join[]  */
+    /** @var $joins Join[] */
     private $joins;
 
-    // we need partial update fields -> this means we need also partial select fields
-    // hidden fields or encrypted fields or hashed field, may be we need two
+    // we may need partial update columns
+    // we may need partial select columns
+    // we may support encrypted columns or hashed columns or private columns
+    // partial vs encrypted, which one is good?
+    // i think encrypted is a good way. some customer want all the user data be encrypted
+    // also some hashed data will not need to read from db,
+    // just compare.. no select result, but update is available, and where is available
+    // how about private data? we want to hide some fields and read only when private mode.
 
-    // custom field for select, not where
-    // may we need another fields when we select custom field? i don't think so.
-    // columns raw
+    // we have to support private columns and encrypted columns -> this will be the end of support
 
     /** @var  $opOr bool */
     private $opOr;
     /** @var  $opNot bool */
     private $opNot;
     /** @var  $noOp bool */
-    private $noOp; // for first time or after (
+    private $noOp; // for the first time or after '('
 
     protected $now = 'NOW()'; // current time
     const CONFIG_KEY = 'orm.pdo';
@@ -71,7 +75,6 @@ class Orm {
         $this->opOr = false;
         $this->opNot = false;
         $this->vars = array(
-            'fields' => array(), // custom fields (max(*) as maxVal)
             'wheres' => array(),
             'orderBys' => array(),
             'groupBys' => array(),
@@ -97,7 +100,6 @@ class Orm {
     public function fetchArray(string $sql, array $params)
     {
         $this->statement = $this->pdo->prepare($sql);
-        /** @noinspection PhpMethodParametersCountMismatchInspection */
         $this->statement->setFetchMode(\PDO::FETCH_ASSOC);
         $this->statement->execute($params);
         $rows = $this->statement->fetchAll();
@@ -169,16 +171,16 @@ class Orm {
     }
 
 
-    public function whereRaw($raw, array $values = null) // replace ? to value
+    public function customWhere($where, array $values = null) // replace ? to value
     {
         $operator = $this->operator();
         foreach($values as $value) {
             $this->paramSuffix++;
-            $valueKey = 'raw___' . $this->paramSuffix;
+            $valueKey = 'custom___' . $this->paramSuffix;
             $this->vars['params'][$valueKey] = $value;
-            $raw = preg_replace('/\?/', $valueKey, $raw, 1);
+            $where = preg_replace('/\?/', $valueKey, $where, 1);
         }
-        $this->vars['wheres'][] =  $operator . $raw;
+        $this->vars['wheres'][] =  $operator . $where;
     }
 
     public function in($column, array $items)
