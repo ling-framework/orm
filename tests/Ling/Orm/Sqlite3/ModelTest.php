@@ -22,7 +22,7 @@ class ModelTest extends TestCase
 {
 
     public function setUp() {
-        config(['orm.pdo' => pdo(':memory:')]);
+        config([Orm::CONFIG_KEY => pdo(':memory:')]);
 
         $dao = new Model();
 

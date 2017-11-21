@@ -17,12 +17,13 @@ class Model {
 
     public function __construct()
     {
-        $this->orm = new Orm();
         $this->init();
-        $this->orm->init($this);
     }
 
-    public function init() {} // this must be overrided
+    public function init() {
+        $this->orm = new Orm();
+        $this->orm->init($this);
+    }
 
     // interface for separating model to orm
     public function fetch(string $sql, array $params, bool $isAll = null) {
@@ -136,14 +137,15 @@ class Model {
     public function selectAll() {
         return $this->orm->selectAll();
     }
-    public function selectObjects() {
+    public function selectObjects() : array
+    {
         return $this->orm->selectObjects();
     }
     public function selectCount() {
         return $this->orm->selectCount();
     }
     public function selectChunk(int $count, callable $func) {
-        return $this->orm->selectChunk($count, $func);
+        $this->orm->selectChunk($count, $func);
     }
     public function save() {
         $this->orm->save();
@@ -170,7 +172,8 @@ class Model {
         return $this;
     }
 
-    public function plainObject() {
+    public function plainObject() : array
+    {
         return array();
     }
 

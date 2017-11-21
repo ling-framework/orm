@@ -1,17 +1,17 @@
 <?php
 namespace Ling\Orm;
 
-use function \Ling\config as config;
+use function \Ling\config;
 
 // base is mysql
 class Orm {
 
     public $tableName;
     public $pk;
-    public $columns;
-    public $createdAtField;
-    public $updatedAtField;
-    public $filters;
+    public $columns = array();
+    public $createdAtColumn;
+    public $updatedAtColumn;
+    public $customColumns = array(); // add it to custom column
 
 
     /** @var $pdo \PDO */
@@ -34,8 +34,6 @@ class Orm {
     // may we need another fields when we select custom field? i don't think so.
     // columns raw
 
-    private $fields;
-
     /** @var  $opOr bool */
     private $opOr;
     /** @var  $opNot bool */
@@ -44,20 +42,19 @@ class Orm {
     private $noOp; // for first time or after (
 
     protected $now = 'NOW()'; // current time
+    const CONFIG_KEY = 'orm.pdo';
 
     public function __construct()
     {
-        $this->pdo = config('orm.pdo');
-        $this->columns = array();
-        $this->filters = array();
+        $this->pdo = config(self::CONFIG_KEY);
     }
 
     public function init(&$model) {
         $this->model = $model;
         $this->className = get_class($model);
-        $this->useOr = false;
-        $this->useNot = false;
-        $this->firstWhere = true;
+        $this->opOr = false;
+        $this->opNot = false;
+        $this->noOp = true;
         $this->prefixedColumns = array();
         $this->joins = array();
 
@@ -158,6 +155,10 @@ class Orm {
         return $errorCode ;
     }
 
+    public function customColumn(string $column) {
+        $this->customColumns[] = $column;
+    }
+
     public function where(string $column, $comparator = null, $value = null)
     {
         $operator = $this->operator();
@@ -210,7 +211,6 @@ class Orm {
     public function search(array $columns, $keyword)
     {
         $operator = $this->operator();
-        $valueKeys = array();
         $likes = array();
         foreach($columns as $column) {
             $this->paramSuffix++;
@@ -270,7 +270,11 @@ class Orm {
 
     public function groupBy($column, $having = null)
     {
-        $this->vars['groupBys'][] = $this->getPrefixedColumn($column);
+        $sql = $this->getPrefixedColumn($column);
+        if ($having) {
+            $sql .= ' HAVING ' . $having;
+        }
+        $this->vars['groupBys'][] = $sql;
     }
 
     public function limit($start, $length)
@@ -296,13 +300,13 @@ class Orm {
 
     public function selectObjects() : array
     {
-        $results = $this->selectAll();
-        $plainObjects = array();
-        foreach ($results as $obj) {
-            $plainObjects[] = $obj->plainObject(); // may we need it? because model is just a plain object
-        }
-        return $plainObjects;
-
+//        $results = $this->selectAll();
+//        $plainObjects = array();
+//        foreach ($results as $obj) {
+////            $plainObjects[] = $obj->plainObject(); // may we need it? because model is just a plain object
+//        }
+//        return $plainObjects;
+        return array();
     }
 
     public function selectCount()
@@ -334,10 +338,10 @@ class Orm {
 
         if ($this->pk && $this->model->{$this->pk}) { // update
             foreach ($this->columns as $column => $original_column) {
-                if ($column === $this->pk || $column === $this->createdAtField) {
+                if ($column === $this->pk || $column === $this->createdAtColumn) {
                     continue;
                 }
-                if ($column === $this->updatedAtField) {
+                if ($column === $this->updatedAtColumn) {
                     $sets[] = $original_column . '=' . $this->now;
                 } else {
                     $sets[] = $original_column . '=:' . $column;
@@ -347,14 +351,14 @@ class Orm {
             $params[$this->pk] = $this->model->{$this->pk};
             $sql = 'UPDATE ' . $this->tableName . ' SET ' . implode(', ', $sets) . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
             $this->exec($sql, $params);
-            if ($this->updatedAtField) {
-                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
-                $this->model->{$this->updatedAtField} = $fetched->{$this->columns[$this->updatedAtField]};
+            if ($this->updatedAtColumn) {
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtColumn] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
+                $this->model->{$this->updatedAtColumn} = $fetched->{$this->columns[$this->updatedAtColumn]};
             }
 
         } else {
             foreach ($this->columns as $column => $original_column) {
-                if ($column === $this->createdAtField || $column === $this->updatedAtField) {
+                if ($column === $this->createdAtColumn || $column === $this->updatedAtColumn) {
                     $values[] = $this->now;
                 } else if ($column === $this->pk || $this->model->{$column} === null) {
                     continue;
@@ -371,11 +375,11 @@ class Orm {
             // we need some error handler here
             $this->exec($sql, $params);
             $this->model->{$this->pk} = $this->lastInsertId();
-            if ($this->createdAtField) {
-                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtField] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
-                $this->model->{$this->createdAtField} = $fetched->{$this->columns[$this->createdAtField]};
-                if ($this->updatedAtField) {
-                    $this->model->{$this->updatedAtField} = $this->model->{$this->createdAtField};
+            if ($this->createdAtColumn) {
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtColumn] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
+                $this->model->{$this->createdAtColumn} = $fetched->{$this->columns[$this->createdAtColumn]};
+                if ($this->updatedAtColumn) {
+                    $this->model->{$this->updatedAtColumn} = $this->model->{$this->createdAtColumn};
                 }
             }
         }
@@ -402,7 +406,8 @@ class Orm {
     }
 
 
-    private function operator() {
+    private function operator() : string
+    {
         if ($this->noOp) {
             $this->noOp = false;
             $operator = '';
@@ -425,8 +430,9 @@ class Orm {
         return $this->prefixedColumns[$column] ?: $column;
     }
 
-    private function generateSelectSql() {
-        $sqlColumns = sqlColumns($this->prefixedColumns);
+    private function generateSelectSql() : string
+    {
+        $sqlColumns = sqlColumns($this->customColumns, $this->prefixedColumns);
         $sqlFroms = sqlFroms($this->tableName, $this->joins, $this->prefixedColumns);
         $sqlWhere = sqlWhere($this->vars['wheres']);
         $sqlGroupBy = sqlGroupBy($this->vars['groupBys']);
@@ -450,7 +456,7 @@ class Orm {
     public function plainObject()
     {
         $obj = array();
-        $columns = $this->prefixedColumns;
+//        $columns = $this->prefixedColumns;
 //        foreach ($columns as $key => $value) {
 //            if (!in_array($key, $this->orm->jsonExcludes)) $obj[$key] = $this->$key;
 //        }
@@ -460,14 +466,15 @@ class Orm {
 }
 
 
-function sqlColumns(array $prefixedColumns) {
-    $sqlColumns = array();
+function sqlColumns(array $customColumns, array $prefixedColumns) {
     $columns = array();
+    foreach ($customColumns as $column) {
+        $columns[] = $column;
+    }
     foreach ($prefixedColumns as $key => $val) {
         $columns[] = $val . ' AS ' . $key;
     }
-    $sqlColumns[] = implode(', ', $columns);
-    return implode(', ', $sqlColumns);
+    return implode(', ', $columns);
 
 }
 
@@ -476,6 +483,7 @@ function sqlFroms($tableName, array $joins, $prefixedColumns) : string
 {
     $sqlFroms = array($tableName . ' as a ');
     if (count($joins) > 0) {
+        /** @var Join $join */
         foreach($joins as $join) {
             $ons = array();
             foreach ($join->conditions as $cond) {
