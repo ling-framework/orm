@@ -4,6 +4,9 @@ namespace Ling\Orm;
 use function \Ling\config;
 
 // base is mysql
+// we remove encryption field. it may be better to make SecureOrm or so to provide full secure functionality
+// we need each model for each dao, that is the right way. do not reuse or modify. it is not desirable.
+// make redundant codes
 class Orm {
 
     public $tableName;
@@ -11,18 +14,12 @@ class Orm {
     public $columns = array();
     public $createdAtColumn;
     public $updatedAtColumn;
-    public $encryptedColumns = array();
-    public $encryptFunc;
-    public $decryptFunc;
-    public $privateColumns = array();
-
 
     /** @var $pdo \PDO */
     private $pdo;
     /** @var $statement \PDOStatement */
     private $statement;
 
-    private $model;
     private $className;
     private $paramSuffix;
     private $prefixedColumns;
@@ -30,11 +27,6 @@ class Orm {
     private $vars;
     /** @var $joins Join[] */
     private $joins;
-    /** @var $privateMode bool */
-    private $privateMode = true; // do not show private column, default is true
-
-
-    // we have to support private columns and encrypted columns -> this will be the end of support
 
     /** @var  $opOr bool */
     private $opOr;
@@ -48,12 +40,11 @@ class Orm {
 
     public function __construct()
     {
-        $this->pdo = config(self::CONFIG_KEY);
+        $this->pdo = config($this::CONFIG_KEY);
     }
 
-    public function init(&$model) {
-        $this->model = $model;
-        $this->className = get_class($model);
+    public function init($className) {
+        $this->className = $className;
         $this->opOr = false;
         $this->opNot = false;
         $this->noOp = true;
@@ -65,7 +56,6 @@ class Orm {
             $this->prefixedColumns[$key] = 'a.' . $val;
         }
         $this->initVars();
-
     }
 
     protected function initVars() {
@@ -329,14 +319,14 @@ class Orm {
         }
     }
 
-    public function save()
+    public function save($model)
     {
         $columns = array();
         $values = array();
         $sets = array();
         $params = array();
 
-        if ($this->pk && $this->model->{$this->pk}) { // update
+        if ($this->pk && $model->{$this->pk}) { // update
             foreach ($this->columns as $column => $original_column) {
                 if ($column === $this->pk || $column === $this->createdAtColumn) {
                     continue;
@@ -345,26 +335,26 @@ class Orm {
                     $sets[] = $original_column . '=' . $this->now;
                 } else {
                     $sets[] = $original_column . '=:' . $column;
-                    $params[$column] = $this->model->{$column};
+                    $params[$column] = $model->{$column};
                 }
             }
-            $params[$this->pk] = $this->model->{$this->pk};
+            $params[$this->pk] = $model->{$this->pk};
             $sql = 'UPDATE ' . $this->tableName . ' SET ' . implode(', ', $sets) . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
             $this->exec($sql, $params);
             if ($this->updatedAtColumn) {
-                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtColumn] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
-                $this->model->{$this->updatedAtColumn} = $fetched->{$this->columns[$this->updatedAtColumn]};
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->updatedAtColumn] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $model->{$this->pk}, [] );
+                $model->{$this->updatedAtColumn} = $fetched->{$this->columns[$this->updatedAtColumn]};
             }
 
         } else {
             foreach ($this->columns as $column => $original_column) {
                 if ($column === $this->createdAtColumn || $column === $this->updatedAtColumn) {
                     $values[] = $this->now;
-                } else if ($column === $this->pk || $this->model->{$column} === null) {
+                } else if ($column === $this->pk || $model->{$column} === null) {
                     continue;
                 } else {
                     $values[] = ':' . $column;
-                    $params[$column] = $this->model->{$column};
+                    $params[$column] = $model->{$column};
                 }
                 $columns[] = $original_column;
 
@@ -374,12 +364,12 @@ class Orm {
             #error_log(join(", ", $params));
             // we need some error handler here
             $this->exec($sql, $params);
-            $this->model->{$this->pk} = $this->lastInsertId();
+            $model->{$this->pk} = $this->lastInsertId();
             if ($this->createdAtColumn) {
-                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtColumn] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $this->model->{$this->pk}, [] );
-                $this->model->{$this->createdAtColumn} = $fetched->{$this->columns[$this->createdAtColumn]};
+                $fetched = $this->fetch('SELECT ' . $this->columns[$this->createdAtColumn] . ' FROM ' . $this->tableName . ' WHERE '. $this->columns[$this->pk] . ' = ' .  $model->{$this->pk}, [] );
+                $model->{$this->createdAtColumn} = $fetched->{$this->columns[$this->createdAtColumn]};
                 if ($this->updatedAtColumn) {
-                    $this->model->{$this->updatedAtColumn} = $this->model->{$this->createdAtColumn};
+                    $model->{$this->updatedAtColumn} = $model->{$this->createdAtColumn};
                 }
             }
         }
@@ -427,7 +417,7 @@ class Orm {
     }
 
     private function getPrefixedColumn($column) {
-        return $this->prefixedColumns[$column] ?: $column;
+        return $this->prefixedColumns[$column] ? $this->prefixedColumns[$column] : $column;
     }
 
     private function generateSelectSql() : string
@@ -535,76 +525,3 @@ function sqlLimit($limits) : string
     }
     return $sql;
 }
-
-//
-///* we may not need interface. every orm has almost same part, we just change the current time or some methods IN or BETWEEN */
-//interface Orm {
-//
-////    /** @var  $pdo \PDO */
-////    public $pdo;
-////    /** @var  $statement \PDOStatement */
-////    public $statement;
-//
-//
-//    //public function init(PDO $pdo, $pk = "seq", $created_at = null, $updated_at = null);
-//
-//    //public function __construct(string $className);
-//
-//
-//    // column function
-////    public function max($column = null); // default pk
-////    public function min($column = null); // default pk
-////    public function avg($column);
-////    public function sum($column);
-////    public function ifNull($column, $default);
-//
-//    public function init(&$model);
-//
-//    // PDO function wrapper
-//    public function fetch(string $sql, array $params, bool $isAll = null);
-//    public function fetchArray(string $sql, array $params);
-//    public function exec(string $sql, array $params) : bool;
-//    public function lastInsertId() : int;
-//    public function rowCount() : int;
-//    public function debugDumpParams() : bool;
-//    public function beginTransaction() : bool;
-//    public function commit() : bool;
-//    public function rollBack() : bool;
-//    public function errorInfo() : array;
-//    public function errorCode();
-//
-//    public function where(string $column, $comparator = null, $value = null);
-//    public function whereRaw($raw, array $value = null);
-//    public function in($column, array $items);
-//    public function between($column, $start, $end);
-//    public function search(array $columns, $keyword); // like search
-//
-//    public function eq($column, $value);
-//    public function neq($column, $value);
-//    public function isNull($column);
-//    public function isNotNull($column);
-//
-//    public function wrap();
-//    public function wrapEnd();
-//    public function opOr(); // replace AND to OR, OR must not appear in the first place
-//    public function opNot(); // add Not
-//
-//    public function orderBy($column, $order = 'DESC');
-//    public function groupBy($column, $having = null);
-//    public function limit($start, $length);
-//
-//    public function select();
-//    public function selectAll();
-//    public function selectObjects();
-//    public function selectCount(); // don't reset
-//    public function selectChunk(int $count, callable $func);
-//
-//    public function save(); // insert or update
-//    public function increment($column, $num = 1); // partially update
-//    public function delete();
-//
-//    public function join(Join $join);
-//    public function paginate(Paginate $paginate);
-//    public function plainObject();
-//
-//}

@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace Ling\Orm\Sqlite3;
 
-use Ling\Orm\Model;
-
 use PHPUnit\Framework\TestCase;
 use function Ling\config;
 
@@ -92,7 +90,6 @@ class ModelTest extends TestCase
             ->where('price', '>', 10000)->selectAll();
         $this->assertCount(40, $stocks);
 
-
         // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
         $stocks = $dao->where('stock', '>', 3)
             ->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()
@@ -106,7 +103,7 @@ class ModelTest extends TestCase
         $this->assertCount(8, $stocks);
     }
 
-
+    /*
     public function testInBetweenSearch() {
 
     }
@@ -131,11 +128,7 @@ class ModelTest extends TestCase
 
     }
 
-
-    public function testPasswordSocialId() {
-
-    }
-
+    */
 
 
 }

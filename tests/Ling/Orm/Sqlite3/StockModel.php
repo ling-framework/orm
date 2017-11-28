@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 namespace Ling\Orm\Sqlite3;
-use Ling\Orm\Model;
 
 class StockModel extends Model {
     public $seq;
@@ -26,8 +25,8 @@ class StockModel extends Model {
             'createdAt' => 'created_at',
             'updatedAt' => 'updated_at'
         ];
-        $this->orm->createdAtField = 'createdAt';
-        $this->orm->updatedAtField = 'updatedAt';
+        $this->orm->createdAtColumn = 'createdAt';
+        $this->orm->updatedAtColumn = 'updatedAt';
     }
 
 }

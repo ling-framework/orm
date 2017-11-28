@@ -9,8 +9,7 @@
 namespace Ling\Orm\Sqlite3;
 
 class Model extends \Ling\Orm\Model {
-    public function init() {
+    public function preInit() {
         $this->orm = new Orm();
-        $this->orm->init($this);
     }
 }

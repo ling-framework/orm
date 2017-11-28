@@ -17,13 +17,20 @@ class Model {
 
     public function __construct()
     {
+        $this->preInit();
         $this->init();
+        $this->postInit();
+
     }
 
-    public function init() {
+    public function preInit() {
         $this->orm = new Orm();
-        $this->orm->init($this);
     }
+    public function postInit() {
+        $this->orm->init(get_class($this));
+    }
+
+    public function init() {} // must be overrided
 
     // interface for separating model to orm
     public function fetch(string $sql, array $params, bool $isAll = null) {
@@ -152,7 +159,7 @@ class Model {
         $this->orm->selectChunk($count, $func);
     }
     public function save() {
-        $this->orm->save();
+        $this->orm->save($this);
     }
     public function increment($column, $num = null){
         $this->orm->increment($column, $num);

@@ -30,8 +30,8 @@ abstract class Paginate { // provide improved pagination
 
     public function __construct($currentPage, $listSize = 0, $paginationSize = 0){
         $this->currentPage = (!$currentPage) ? self::DEFAULT_CURRENT_PAGE : $currentPage ;
-        $this->listSize = $listSize ? $listSize : self::DEFAULT_LIST_SIZE;
-        $this->paginationSize = $paginationSize ? $paginationSize : self::DEFAULT_PAGINATION_SIZE;
+        $this->listSize = $listSize ?: self::DEFAULT_LIST_SIZE;
+        $this->paginationSize = $paginationSize ?: self::DEFAULT_PAGINATION_SIZE;
         $this->startAt = ($this->currentPage - 1)*$this->paginationSize;
         $this->endAt = $this->currentPage * $this->paginationSize;
         $this->valid = true;
