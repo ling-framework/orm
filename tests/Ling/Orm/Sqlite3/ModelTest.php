@@ -124,7 +124,7 @@ class ModelTest extends TestCase
         $distilleries = $dao->customWhere('NOT name = ? AND NOT name = ?', ['kavalan', 'caroni'])->selectAll();
         $this->assertCount(6, $distilleries);
     }
-*/
+
     public function testIncrement() {
         $dao = new StockModel();
         $stock = $dao->eq('seq', 1)->select();
@@ -136,19 +136,27 @@ class ModelTest extends TestCase
         $this->assertEquals(11, $stock->stock);
     }
 
-    /*
     public function testSelectChunk() {
+        $dao = new StockModel();
+        $dao->where('stock', '>', 10)->selectChunk(5, function(array $stocks, $index) {
+            if ($index === 3) {
+                $this->assertCount(3, $stocks);
+            } else {
+                $this->assertCount(5, $stocks);
+            }
+        });
 
     }
+    */
 
     public function testJoin() {
 
     }
 
+    /*
     public function testPaginate() {
 
     }
-
     */
 
 
