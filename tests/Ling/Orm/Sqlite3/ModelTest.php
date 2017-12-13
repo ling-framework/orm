@@ -103,15 +103,28 @@ class ModelTest extends TestCase
         $this->assertCount(8, $stocks);
     }
 
-    /*
     public function testInBetweenSearch() {
+        $dao = new StockModel();
+        $stocks = $dao->in('stock', [1, 3])->selectAll();
+        $this->assertCount(11, $stocks);
 
+        $stocks = $dao->between('stock', 1, 3)->selectAll();
+        $this->assertCount(12, $stocks);
+
+        $stocks = $dao->search(['bottleSeq', 'stock'], '3')->selectAll();
+        $this->assertCount(16, $stocks);
     }
 
-    public function testWhereRaw() {
+    public function testCustomWhere() {
+        $dao = new DistilleryModel();
+        $distilleries = $dao->customWhere('region ISNULL')->selectAll();
+        $this->assertCount(2, $distilleries);
 
+        $distilleries = $dao->customWhere('NOT name = ? AND NOT name = ?', ['kavalan', 'caroni'])->selectAll();
+        $this->assertCount(6, $distilleries);
     }
 
+    /*
     public function testIncrement() {
 
     }

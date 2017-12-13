@@ -162,11 +162,13 @@ class Orm {
     public function customWhere($where, array $values = null) // replace ? to value
     {
         $operator = $this->operator();
-        foreach($values as $value) {
-            $this->paramSuffix++;
-            $valueKey = 'custom___' . $this->paramSuffix;
-            $this->vars['params'][$valueKey] = $value;
-            $where = preg_replace('/\?/', $valueKey, $where, 1);
+        if ($values) {
+            foreach($values as $value) {
+                $this->paramSuffix++;
+                $valueKey = 'custom___' . $this->paramSuffix;
+                $this->vars['params'][$valueKey] = $value;
+                $where = preg_replace('/\?/', ':' . $valueKey, $where, 1);
+            }
         }
         $this->vars['wheres'][] =  $operator . $where;
     }
@@ -177,7 +179,7 @@ class Orm {
         $valueKeys = array();
         foreach($items as $item) {
             $this->paramSuffix++;
-            $valueKey = $column . '___' . $this->paramSuffix;
+            $valueKey = ':' . $column . '___' . $this->paramSuffix;
             $valueKeys[] = $valueKey;
             $this->vars['params'][$valueKey] = $item;
         }
@@ -188,11 +190,11 @@ class Orm {
     {
         $operator = $this->operator();
         $this->paramSuffix++;
-        $valueStartKey = $column . '___' . $this->paramSuffix;
+        $valueStartKey = ':' . $column . '___' . $this->paramSuffix;
         $this->paramSuffix++;
-        $valueEndKey = $column . '___' . $this->paramSuffix;
+        $valueEndKey = ':' . $column . '___' . $this->paramSuffix;
 
-        $this->vars['wheres'][] = $operator . $this->getPrefixedColumn($column) . ' BETWEEN  :' . $valueStartKey . ' AND :' . $valueEndKey;
+        $this->vars['wheres'][] = $operator . $this->getPrefixedColumn($column) . ' BETWEEN ' . $valueStartKey . ' AND ' . $valueEndKey;
         $this->vars['params'][$valueStartKey] = $start;
         $this->vars['params'][$valueEndKey] = $end;
 
@@ -200,13 +202,15 @@ class Orm {
 
     public function search(array $columns, $keyword)
     {
+        $likeKeyword = '%' . $keyword . '%';
         $operator = $this->operator();
         $likes = array();
         foreach($columns as $column) {
             $this->paramSuffix++;
             $valueKey = 'keyword___' . $this->paramSuffix;
-            $likes[] = $this->getPrefixedColumn($column) . " LIKE CONCAT('%', :" . $valueKey . ", '%')";
-            $this->vars['params'][$valueKey] = $keyword;
+
+            $likes[] = $this->getPrefixedColumn($column) . ' LIKE :' . $valueKey;
+            $this->vars['params'][$valueKey] = $likeKeyword;
         }
         $this->vars['wheres'][] =  $operator . ' (' . implode(' OR ', $likes) . ')';
 
