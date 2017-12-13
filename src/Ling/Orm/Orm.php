@@ -379,11 +379,16 @@ class Orm {
         }
     }
 
-    public function increment($column, $num = 1)
+    public function increment($model, $column, $num = 1)
     {
         $original_column = $this->columns[$column];
-        $sql = 'UPDATE ' . $this->tableName . ' SET ' . $original_column . ' = ' . $original_column . ' + ' . $num . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
-        $this->exec($sql, []);
+        $set = $original_column . '=' . $original_column . '+' . $num;
+        if ($this->updatedAtColumn) {
+            $set .= ', ' . $this->columns[$this->updatedAtColumn] . '=' . $this->now;
+        }
+        $sql = 'UPDATE ' . $this->tableName . ' SET ' . $set . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
+        $this->exec($sql, [$model->{$this->pk}]);
+        error_log($sql);
     }
 
     public function delete()
@@ -476,7 +481,7 @@ function sqlColumns(array $customColumns, array $prefixedColumns) {
 function sqlFroms($tableName, array $joins, $prefixedColumns) : string
 {
     $sqlFroms = array($tableName . ' as a ');
-    if (count($joins) > 0) {
+    if (\count($joins) > 0) {
         /** @var Join $join */
         foreach($joins as $join) {
             $ons = array();
@@ -493,7 +498,7 @@ function sqlFroms($tableName, array $joins, $prefixedColumns) : string
 function sqlGroupBy(array $groupBys) : string
 {
     $sql = '';
-    if (count($groupBys) > 0) { // group by doesn't require prefix
+    if (\count($groupBys) > 0) { // group by doesn't require prefix
         $sql = ' GROUP BY ' . implode(', ', $groupBys);
     }
     return $sql;
@@ -502,7 +507,7 @@ function sqlGroupBy(array $groupBys) : string
 function sqlOrderBy(array $orderBys) : string
 {
     $sql = '';
-    if (count($orderBys) > 0) { // order by doesn't require prefix
+    if (\count($orderBys) > 0) { // order by doesn't require prefix
         $orders = array();
         foreach ($orderBys as $orderBy) {
             $orders[] = implode(' ', $orderBy);
@@ -515,7 +520,7 @@ function sqlOrderBy(array $orderBys) : string
 function sqlWhere($wheres) : string
 {
     $sql = '';
-    if (count($wheres) > 0) {
+    if (\count($wheres) > 0) {
         $sql = ' WHERE ' . implode(' ', $wheres);
     }
     return $sql;
@@ -524,7 +529,7 @@ function sqlWhere($wheres) : string
 function sqlLimit($limits) : string
 {
     $sql = '';
-    if (count($limits) > 0) { // only for sql server 2012+
+    if (\count($limits) > 0) { // only for sql server 2012+
         $sql = ' LIMIT ' . $limits[0] . ', ' . $limits[1];
     }
     return $sql;

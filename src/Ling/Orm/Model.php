@@ -161,8 +161,8 @@ class Model {
     public function save() {
         $this->orm->save($this);
     }
-    public function increment($column, $num = null){
-        $this->orm->increment($column, $num);
+    public function increment($column, $num = 1){
+        $this->orm->increment($this, $column, $num);
     }
     public function delete() {
         $this->orm->delete();

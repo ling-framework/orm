@@ -35,6 +35,7 @@ class ModelTest extends TestCase
         }
     }
 
+    /*
     public function testInsertUpdateDistillery() {
         $model = new DistilleryModel();
 
@@ -123,12 +124,19 @@ class ModelTest extends TestCase
         $distilleries = $dao->customWhere('NOT name = ? AND NOT name = ?', ['kavalan', 'caroni'])->selectAll();
         $this->assertCount(6, $distilleries);
     }
-
-    /*
+*/
     public function testIncrement() {
+        $dao = new StockModel();
+        $stock = $dao->eq('seq', 1)->select();
+        $this->assertEquals(10, $stock->stock);
 
+        $stock->increment('stock');
+
+        $stock = $dao->eq('seq', 1)->select();
+        $this->assertEquals(11, $stock->stock);
     }
 
+    /*
     public function testSelectChunk() {
 
     }
