@@ -150,7 +150,11 @@ class ModelTest extends TestCase
     */
 
     public function testJoin() {
+        $dao = new BrandModel();
+        $brands = $dao->selectAll();
+        $this->assertCount(15, $brands);
 
+        print_r($brands);
     }
 
     /*

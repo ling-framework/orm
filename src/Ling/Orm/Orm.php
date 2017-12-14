@@ -22,11 +22,11 @@ class Orm {
 
     private $className;
     private $paramSuffix;
-    private $prefixedColumns;
+    private $prefixedColumns = array();
     private $customColumns = array(); // i.e. max(seq)
     private $vars;
     /** @var $joins Join[] */
-    private $joins;
+    public $joins = array();
 
     /** @var  $opOr bool */
     private $opOr;
@@ -48,13 +48,20 @@ class Orm {
         $this->opOr = false;
         $this->opNot = false;
         $this->noOp = true;
-        $this->prefixedColumns = array();
-        $this->joins = array();
 
         $this->paramSuffix = 0;
+
         foreach($this->columns as $key => $val) {
             $this->prefixedColumns[$key] = 'a.' . $val;
         }
+        if ($this->joins) {
+            foreach ($this->joins as $join) {
+                foreach($join->columns as $key => $val) {
+                    $this->prefixedColumns[$key] = $join->prefix . '.' . $val;
+                }
+            }
+        }
+
         $this->initVars();
     }
 
@@ -398,9 +405,6 @@ class Orm {
     }
 
     public function join(Join $join) {
-        foreach ($join->columns as $key => $val) {
-            $this->prefixedColumns[$key] = $join->prefix . '.' . $val;
-        }
         $this->joins[] = $join;
     }
 
@@ -486,7 +490,7 @@ function sqlFroms($tableName, array $joins, $prefixedColumns) : string
         foreach($joins as $join) {
             $ons = array();
             foreach ($join->conditions as $cond) {
-                $ons[] = $prefixedColumns[$cond[0]] . ' ' . $cond[1] . ' ' . $prefixedColumns[$cond[2]];
+                $ons[] = $cond;
             }
             $sqlFroms[] = $join->joinType . ' JOIN ' . $join->tableName . ' AS ' . $join->prefix . ' ON ' . implode(' AND ', $ons);
         }

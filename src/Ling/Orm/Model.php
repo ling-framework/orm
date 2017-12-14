@@ -20,14 +20,13 @@ class Model {
         $this->preInit();
         $this->init();
         $this->postInit();
-
     }
 
     public function preInit() {
         $this->orm = new Orm();
     }
     public function postInit() {
-        $this->orm->init(get_class($this));
+        $this->orm->init(\get_class($this));
     }
 
     public function init() {} // must be overrided

@@ -8,7 +8,7 @@ class Join {
     public $columns = array();
     public $conditions = array();
     public $prefixedColumns = array();
-    public function __construct($joinType, $prefix, $table, $columns, $onEqConditions = null) {
+    public function __construct($joinType, $prefix, $table, $columns, array $onConditions) {
         $this->joinType = $joinType;
         $this->prefix = $prefix;
         $this->tableName = $table;
@@ -16,16 +16,21 @@ class Join {
         foreach($this->columns as $key => $val) {
             $this->prefixedColumns[$key] = $this->prefix . '.' . $val;
         }
-        if ($onEqConditions) {
-            $this->onEq($onEqConditions[0], $onEqConditions[1]);
+        if ($onConditions) {
+            $this->on($onConditions);
         }
     }
-    public function onEq($cond1, $cond2) {
-        $this->on($cond1, '=', $cond2);
-        return $this;
-    }
-    public function on($cond1, $comparator,  $cond2) {
-        $this->conditions[] = array($cond1, $comparator, $cond2);
+    public function on(array $onConditions) {
+
+        $count = \count($onConditions);
+        if ($count === 1) {
+            $this->conditions[] = $onConditions[0];
+        } else if ($count === 2) {
+            $this->conditions[] = $onConditions[0] . ' = ' . $onConditions[1];
+        } else {
+            $this->conditions[] = $onConditions[0] . $onConditions[1] . $onConditions[2];
+        }
+
         return $this;
     }
 }
