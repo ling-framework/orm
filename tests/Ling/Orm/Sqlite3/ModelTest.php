@@ -147,21 +147,25 @@ class ModelTest extends TestCase
         });
 
     }
-    */
 
     public function testJoin() {
         $dao = new BrandModel();
         $brands = $dao->selectAll();
         $this->assertCount(15, $brands);
 
-        print_r($brands);
-    }
+        // we need more complicated join issue
 
-    /*
-    public function testPaginate() {
-
+        $dao = new BottleModel();
+        $bottles = $dao->selectAll();
+        print_r($bottles);
+        $this->assertCount(33, $bottles);
     }
     */
 
+    public function testPaginate() {
+        
+
+
+    }
 
 }

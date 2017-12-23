@@ -19,7 +19,7 @@ class BrandModel extends Model {
     public $updatedAt;
 
     // join columns
-    public $joinSeq;
+    public $bSeq;
     public $distilleryName;
     public $country;
     public $region;
@@ -41,7 +41,7 @@ class BrandModel extends Model {
         // create join and add it
 
         $distilleryJoin = new Join('', 'b', 'distillery',
-            ['bSeq' => 'seq', 'distilleryName' => 'name', 'country' => 'country', 'region' => 'region'], // no same name
+            ['bSeq' => 'seq', 'distilleryName' => 'name', 'country' => 'country', 'region' => 'region'], // no same name allowed
             ['bSeq', 'distillerySeq']);
         $this->join($distilleryJoin);
     }
