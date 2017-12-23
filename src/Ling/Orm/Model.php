@@ -177,9 +177,8 @@ class Model {
         return $this;
     }
 
-    public function paginate(Paginate $paginate) {
-        $this->orm->paginate($paginate);
-        return $this;
+    public function paginate(Paginate $paginate) : Paginate {
+        return $this->orm->paginate($paginate);
     }
 
     public function plainObject() : array

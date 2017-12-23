@@ -163,7 +163,10 @@ class ModelTest extends TestCase
     */
 
     public function testPaginate() {
-        
+        $dao = new BottleModel();
+        $paginate = new BottlePaginate(1);
+        $paginate = $dao->orderBy('seq')->paginate($paginate);
+        $this->assertCount(5, $paginate->list);
 
 
     }

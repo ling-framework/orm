@@ -11,9 +11,12 @@ abstract class Paginate { // provide improved pagination
     public $currentPage;
     public $listSize;
     public $paginationSize;
+    public $keyword;
+    public $criteria;
+
     // output
     public $totalCount;
-    public $valid; // when current page index is valid, not p < 0 or p > totalCount
+    public $validIndex; // when current page index is valid, not p < 0 or p > totalCount
     public $list;
     // temporary variables
     public $startAt;
@@ -28,13 +31,13 @@ abstract class Paginate { // provide improved pagination
     protected $useLastSkip;
     protected $totalPage;
 
-    public function __construct($currentPage, $listSize = 0, $paginationSize = 0){
+    public function __construct($currentPage, $keyword = NULL, $criteria = NULL, int $listSize = 0, int $paginationSize = 0){
         $this->currentPage = (!$currentPage) ? self::DEFAULT_CURRENT_PAGE : $currentPage ;
         $this->listSize = $listSize ?: self::DEFAULT_LIST_SIZE;
         $this->paginationSize = $paginationSize ?: self::DEFAULT_PAGINATION_SIZE;
         $this->startAt = ($this->currentPage - 1)*$this->paginationSize;
         $this->endAt = $this->currentPage * $this->paginationSize;
-        $this->valid = true;
+        $this->validIndex = true;
         $this->totalCount = 0;
         $this->list = array();
     }
@@ -50,7 +53,7 @@ abstract class Paginate { // provide improved pagination
         $obj['listSize'] = $this->listSize;
         $obj['paginationSize'] = $this->paginationSize;
         $obj['totalCount'] = $this->totalCount;
-        $obj['valid'] = $this->valid;
+        $obj['validIndex'] = $this->validIndex;
         $obj['list'] = array();
         foreach ($this->list as $item) {
             $obj['list'][] = $item->plainObject();

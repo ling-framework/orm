@@ -314,7 +314,13 @@ class Orm {
     {
         $sqlFroms = sqlFroms($this->tableName, $this->joins, $this->prefixedColumns);
         $sqlWhere = sqlWhere($this->vars['wheres']);
-        $sql = 'SELECT count(*) AS totalCount  FROM ' . $sqlFroms . $sqlWhere;
+        if ($this->joins) {
+            $sqlColumns = ', ' . sqlColumns($this->customColumns, $this->prefixedColumns);
+        } else {
+            $sqlColumns = '';
+        }
+        $sql = 'SELECT count(*) AS totalCount' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere;
+        error_log($sql);
         return $this->fetch($sql, $this->vars['params'])->totalCount;
 
     }
