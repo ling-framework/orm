@@ -312,15 +312,13 @@ class Orm {
 
     public function selectCount()
     {
-        $sqlFroms = sqlFroms($this->tableName, $this->joins, $this->prefixedColumns);
+        $sqlFroms = sqlFroms($this->tableName, $this->joins);
         $sqlWhere = sqlWhere($this->vars['wheres']);
+        $sqlColumns = '';
         if ($this->joins) {
             $sqlColumns = ', ' . sqlColumns($this->customColumns, $this->prefixedColumns);
-        } else {
-            $sqlColumns = '';
         }
         $sql = 'SELECT count(*) AS totalCount' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere;
-        //error_log($sql);
         return $this->fetch($sql, $this->vars['params'])->totalCount;
 
     }
@@ -436,13 +434,13 @@ class Orm {
     }
 
     private function getPrefixedColumn($column) {
-        return $this->prefixedColumns[$column] ? $this->prefixedColumns[$column] : $column;
+        return $this->prefixedColumns[$column] ?: $column;
     }
 
     private function generateSelectSql() : string
     {
         $sqlColumns = sqlColumns($this->customColumns, $this->prefixedColumns);
-        $sqlFroms = sqlFroms($this->tableName, $this->joins, $this->prefixedColumns);
+        $sqlFroms = sqlFroms($this->tableName, $this->joins);
         $sqlWhere = sqlWhere($this->vars['wheres']);
         $sqlGroupBy = sqlGroupBy($this->vars['groupBys']);
         $sqlOrderBy = sqlOrderBy($this->vars['orderBys']);
@@ -488,7 +486,7 @@ function sqlColumns(array $customColumns, array $prefixedColumns) {
 }
 
 
-function sqlFroms($tableName, array $joins, $prefixedColumns) : string
+function sqlFroms($tableName, array $joins) : string
 {
     $sqlFroms = array($tableName . ' as a ');
     if (\count($joins) > 0) {
