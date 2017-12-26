@@ -320,7 +320,7 @@ class Orm {
             $sqlColumns = '';
         }
         $sql = 'SELECT count(*) AS totalCount' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere;
-        error_log($sql);
+        //error_log($sql);
         return $this->fetch($sql, $this->vars['params'])->totalCount;
 
     }
@@ -401,7 +401,7 @@ class Orm {
         }
         $sql = 'UPDATE ' . $this->tableName . ' SET ' . $set . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
         $this->exec($sql, [$model->{$this->pk}]);
-        error_log($sql);
+        //error_log($sql);
     }
 
     public function delete()
@@ -448,7 +448,7 @@ class Orm {
         $sqlOrderBy = sqlOrderBy($this->vars['orderBys']);
         $sqlLimit = sqlLimit($this->vars['limit']);
         $sql = 'SELECT ' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere . $sqlGroupBy . $sqlOrderBy . $sqlLimit;
-        error_log($sql);
+        //error_log($sql);
         return $sql;
     }
 

@@ -35,7 +35,6 @@ class ModelTest extends TestCase
         }
     }
 
-    /*
     public function testInsertUpdateDistillery() {
         $model = new DistilleryModel();
 
@@ -157,18 +156,15 @@ class ModelTest extends TestCase
 
         $dao = new BottleModel();
         $bottles = $dao->selectAll();
-        print_r($bottles);
         $this->assertCount(33, $bottles);
     }
-    */
 
     public function testPaginate() {
         $dao = new BottleModel();
         $paginate = new BottlePaginate(1);
         $paginate = $dao->orderBy('seq')->paginate($paginate);
+        $this->assertEquals(33, $paginate->totalCount);
         $this->assertCount(5, $paginate->list);
-
-
     }
 
 }
