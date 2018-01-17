@@ -22,6 +22,10 @@
         "phpunit/phpunit": "^6.4"
     },
     "autoload": {
+        "files": [
+            "src/Ling/Orm/helpers.php",
+            "src/Ling/Orm/Sqlite3/helpers.php"
+        ],
         "psr-4": {"Ling\\": "src/Ling"}
     },
     "autoload-dev": {
