@@ -167,4 +167,17 @@ class ModelTest extends TestCase
         $this->assertCount(5, $paginate->list);
     }
 
+    public function testOneToMany() {
+        // there must be a sub model which is connected to current model
+        // parent model has to get one field for array
+        // if there's matched model, we have to set when it goes.
+        // use join
+
+    }
+
+    public function testManyToMany() {
+
+        // We have to set two model as join
+    }
+
 }

@@ -15,6 +15,10 @@ class Orm {
     public $createdAtColumn;
     public $updatedAtColumn;
 
+    // column must be save to array and reverted to json automatically
+    // we need i18n also, i18n is also based on json
+    public $jsonColumns = array();
+
     /** @var $pdo \PDO */
     private $pdo;
     /** @var $statement \PDOStatement */
