@@ -9,7 +9,5 @@
 namespace Ling\Orm\Sqlite3;
 
 class Model extends \Ling\Orm\Model {
-    public function preInit() {
-        $this->orm = new Orm();
-    }
+    use ModelTrait;
 }

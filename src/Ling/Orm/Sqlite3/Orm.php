@@ -1,8 +1,8 @@
 <?php
 namespace Ling\Orm\Sqlite3;
 
+// this may be trait not class
 class Orm extends \Ling\Orm\Orm {
-    protected /** @noinspection ClassOverridesFieldOfSuperClassInspection */ $now = "DateTime('now','localtime')";
-    const CONFIG_KEY = 'orm.pdo.sqlite3';
+    use OrmTrait;
 }
 

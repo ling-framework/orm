@@ -18,9 +18,10 @@ include 'bootstrap.php';
 
 class ModelTest extends TestCase
 {
+    use OrmTrait;
 
     public function setUp() {
-        config([Orm::CONFIG_KEY => pdo(':memory:')]);
+        config([$this->configKey() => pdo(':memory:')]);
 
         $dao = new Model();
 

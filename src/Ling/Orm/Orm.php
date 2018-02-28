@@ -39,12 +39,16 @@ class Orm {
     /** @var  $noOp bool */
     private $noOp; // for the first time or after '('
 
-    protected $now = 'NOW()'; // current time
-    const CONFIG_KEY = 'orm.pdo';
+    public function now() {
+        return 'NOW()';
+    }
+    public function configKey() {
+        return 'orm.pdo';
+    }
 
     public function __construct()
     {
-        $this->pdo = config($this::CONFIG_KEY);
+        $this->pdo = config($this->configKey());
     }
 
     public function init($className) {
@@ -351,7 +355,7 @@ class Orm {
                     continue;
                 }
                 if ($column === $this->updatedAtColumn) {
-                    $sets[] = $original_column . '=' . $this->now;
+                    $sets[] = $original_column . '=' . $this->now();
                 } else {
                     $sets[] = $original_column . '=:' . $column;
                     $params[$column] = $model->{$column};
@@ -368,7 +372,7 @@ class Orm {
         } else {
             foreach ($this->columns as $column => $original_column) {
                 if ($column === $this->createdAtColumn || $column === $this->updatedAtColumn) {
-                    $values[] = $this->now;
+                    $values[] = $this->now();
                 } else if ($column === $this->pk || $model->{$column} === null) {
                     continue;
                 } else {
@@ -399,7 +403,7 @@ class Orm {
         $original_column = $this->columns[$column];
         $set = $original_column . '=' . $original_column . '+' . $num;
         if ($this->updatedAtColumn) {
-            $set .= ', ' . $this->columns[$this->updatedAtColumn] . '=' . $this->now;
+            $set .= ', ' . $this->columns[$this->updatedAtColumn] . '=' . $this->now();
         }
         $sql = 'UPDATE ' . $this->tableName . ' SET ' . $set . ' WHERE ' . $this->columns[$this->pk] . '=:' . $this->pk;
         $this->exec($sql, [$model->{$this->pk}]);
