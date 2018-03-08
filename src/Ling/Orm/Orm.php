@@ -39,16 +39,15 @@ class Orm {
     /** @var  $noOp bool */
     private $noOp; // for the first time or after '('
 
-    public function now() {
+    const PDO_KEY = 'orm.pdo';
+
+    public function now() { // this function will be overrided by trait
         return 'NOW()';
-    }
-    public function configKey() {
-        return 'orm.pdo';
     }
 
     public function __construct()
     {
-        $this->pdo = config($this->configKey());
+        $this->pdo = config($this::PDO_KEY);
     }
 
     public function init($className) {
