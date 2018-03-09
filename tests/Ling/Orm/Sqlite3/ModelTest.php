@@ -42,7 +42,7 @@ class ModelTest extends TestCase
         $model->region = 'islay';
         $model->save();
 
-        $this->assertEquals($model->seq, 9);
+        $this->assertEquals($model->id, 9);
         $this->assertEquals($model->name, 'laphroaig');
         $this->assertNotNull($model->createdAt);
         $this->assertNotNull($model->updatedAt);
@@ -51,15 +51,15 @@ class ModelTest extends TestCase
         $model->name = 'mortlach';
         $model->save();
 
-        $this->assertEquals($model->seq, 9);
+        $this->assertEquals($model->id, 9);
         $this->assertEquals($model->name, 'mortlach');
         //$hash = password_hash('hello', PASSWORD_DEFAULT);
     }
 
     public function testSelectDistillery() {
         // select where shop is 1 or 3 and stock is more than 2 and price is over 3
-        // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
-        // ((stock = 3 and stock = 10) or (shop_seq = 1 or shop_seq = 3)) and price > 10000
+        // stock > 3 and (shop_id = 1 or shop_id = 3) and price > 10000
+        // ((stock = 3 and stock = 10) or (shop_id = 1 or shop_id = 3)) and price > 10000
 
         $dao = new DistilleryModel();
         $distillery = $dao->where('name', '=', 'laphroaig')->select();
@@ -68,13 +68,13 @@ class ModelTest extends TestCase
 
     public function testSelectAllLimitDistillery() {
         $dao = new DistilleryModel();
-        $distilleries = $dao->where('seq', '>', 2)->selectAll();
+        $distilleries = $dao->where('id', '>', 2)->selectAll();
         $this->assertEquals($distilleries[0]->name, 'yamazaki');
 
-        $distilleries = $dao->where('seq', '>', 2)->limit(5)->selectAll();
+        $distilleries = $dao->where('id', '>', 2)->limit(5)->selectAll();
         $this->assertCount(5, $distilleries);
 
-        $distilleries = $dao->where('seq', '>', 2)->limit(1, 2)->selectAll();
+        $distilleries = $dao->where('id', '>', 2)->limit(1, 2)->selectAll();
         $this->assertCount(2, $distilleries);
 
     }
@@ -83,21 +83,21 @@ class ModelTest extends TestCase
     public function testWrapOrNotStock() {
         $dao = new StockModel();
 
-        // stock > 3 or (shop_seq = 1 or shop_seq = 3) and price > 10000
+        // stock > 3 or (shop_id = 1 or shop_id = 3) and price > 10000
         $stocks = $dao->where('stock', '>', 3)
-            ->opOr()->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()
+            ->opOr()->wrap()->eq('shopId', 1)->opOr()->eq('shopId', 3)->wrapEnd()
             ->where('price', '>', 10000)->selectAll();
         $this->assertCount(40, $stocks);
 
-        // stock > 3 and (shop_seq = 1 or shop_seq = 3) and price > 10000
+        // stock > 3 and (shop_id = 1 or shop_id = 3) and price > 10000
         $stocks = $dao->where('stock', '>', 3)
-            ->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()
+            ->wrap()->eq('shopId', 1)->opOr()->eq('shopId', 3)->wrapEnd()
             ->where('price', '>', 10000)->selectAll();
         $this->assertCount(11, $stocks);
 
-        // ((stock = 3 or stock = 10) and (shop_seq = 1 or shop_seq = 3)) and price > 10000
+        // ((stock = 3 or stock = 10) and (shop_id = 1 or shop_id = 3)) and price > 10000
         $stocks = $dao->wrap()->wrap()->eq('stock', 3)->opOr()->eq('stock', 10)->wrapEnd()
-            ->wrap()->eq('shopSeq', 1)->opOr()->eq('shopSeq', 3)->wrapEnd()->wrapEnd()
+            ->wrap()->eq('shopId', 1)->opOr()->eq('shopId', 3)->wrapEnd()->wrapEnd()
             ->where('price', '>', 10000)->selectAll();
         $this->assertCount(8, $stocks);
     }
@@ -110,7 +110,7 @@ class ModelTest extends TestCase
         $stocks = $dao->between('stock', 1, 3)->selectAll();
         $this->assertCount(12, $stocks);
 
-        $stocks = $dao->search(['bottleSeq', 'stock'], '3')->selectAll();
+        $stocks = $dao->search(['bottleId', 'stock'], '3')->selectAll();
         $this->assertCount(16, $stocks);
     }
 
@@ -125,12 +125,12 @@ class ModelTest extends TestCase
 
     public function testIncrement() {
         $dao = new StockModel();
-        $stock = $dao->eq('seq', 1)->select();
+        $stock = $dao->eq('id', 1)->select();
         $this->assertEquals(10, $stock->stock);
 
         $stock->increment('stock');
 
-        $stock = $dao->eq('seq', 1)->select();
+        $stock = $dao->eq('id', 1)->select();
         $this->assertEquals(11, $stock->stock);
     }
 
@@ -161,7 +161,7 @@ class ModelTest extends TestCase
     public function testPaginate() {
         $dao = new BottleModel();
         $paginate = new BottlePaginate(1);
-        $paginate = $dao->orderBy('seq')->paginate($paginate);
+        $paginate = $dao->orderBy('id')->paginate($paginate);
         $this->assertEquals(33, $paginate->totalCount);
         $this->assertCount(5, $paginate->list);
     }

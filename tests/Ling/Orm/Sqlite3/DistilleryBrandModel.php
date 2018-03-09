@@ -5,7 +5,7 @@ namespace Ling\Orm\Sqlite3;
 // distillery brand one to many model
 
 class DistilleryBrandModel extends Model {
-    public $seq;
+    public $id;
     public $name;
     public $country;
     public $region;
@@ -17,9 +17,9 @@ class DistilleryBrandModel extends Model {
 
     public function init() {
         $this->orm->tableName = 'distillery';
-        $this->orm->pk = 'seq';
+        $this->orm->pk = 'id';
         $this->orm->columns = [
-            'seq' => 'seq',
+            'id' => 'id',
             'name' => 'name',
             'country' => 'country',
             'region' => 'region',

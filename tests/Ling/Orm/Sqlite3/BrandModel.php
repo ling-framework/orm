@@ -12,14 +12,14 @@ namespace Ling\Orm\Sqlite3;
 use Ling\Orm\Join;
 
 class BrandModel extends Model {
-    public $seq;
-    public $distillerySeq;
+    public $id;
+    public $distilleryId;
     public $name;
     public $createdAt;
     public $updatedAt;
 
     // join columns
-    public $bSeq;
+    public $bId;
     public $distilleryName;
     public $country;
     public $region;
@@ -27,10 +27,10 @@ class BrandModel extends Model {
 
     public function init() {
         $this->orm->tableName = 'brand';
-        $this->orm->pk = 'seq';
+        $this->orm->pk = 'id';
         $this->orm->columns = [
-            'seq' => 'seq',
-            'distillerySeq' => 'distillery_seq',
+            'id' => 'id',
+            'distilleryId' => 'distillery_id',
             'name' => 'name',
             'createdAt' => 'created_at',
             'updatedAt' => 'updated_at',
@@ -41,8 +41,8 @@ class BrandModel extends Model {
         // create join and add it
 
         $distilleryJoin = new Join('', 'b', 'distillery',
-            ['bSeq' => 'seq', 'distilleryName' => 'name', 'country' => 'country', 'region' => 'region'], // no same name allowed
-            ['bSeq', 'distillerySeq']);
+            ['bId' => 'id', 'distilleryName' => 'name', 'country' => 'country', 'region' => 'region'], // no same name allowed
+            ['bId', 'distilleryId']);
         $this->join($distilleryJoin);
     }
 

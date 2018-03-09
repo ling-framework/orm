@@ -12,7 +12,7 @@ namespace Ling\Orm\Sqlite3;
 use Ling\Orm\Join;
 
 class BottleModel extends Model {
-    public $seq;
+    public $id;
     public $name;
     public $liquorType;
     public $caskType;
@@ -20,44 +20,44 @@ class BottleModel extends Model {
     public $age;
     public $strength;
     public $volume;
-    public $brandSeq;
-    public $bottlerBrandSeq;
-    public $importerSeq;
+    public $brandId;
+    public $bottlerBrandId;
+    public $importerId;
     public $createdAt;
     public $updatedAt;
 
     // join brand
-    public $bSeq;
-    public $distillerySeq;
+    public $bId;
+    public $distilleryId;
     public $brandName;
 
     // join distillery
-    public $cSeq;
+    public $cId;
     public $distilleryName;
     public $country;
     public $region;
 
     // join bottlerBrand
-    public $dSeq;
-    public $bottlerSeq;
+    public $dId;
+    public $bottlerId;
     public $bottlerBrandName;
 
     // join bottler
-    public $eSeq;
+    public $eId;
     public $bottlerName;
     public $bottlerCountry;
 
     // join importer
-    public $fSeq;
+    public $fId;
     public $importerName;
     public $importerCountry;
 
 
     public function init() {
         $this->orm->tableName = 'bottle';
-        $this->orm->pk = 'seq';
+        $this->orm->pk = 'id';
         $this->orm->columns = [
-            'seq' => 'seq',
+            'id' => 'id',
             'name' => 'name',
             'liquorType' => 'liquor_type',
             'caskType' => 'cask_type',
@@ -65,9 +65,9 @@ class BottleModel extends Model {
             'age' => 'age',
             'strength' => 'strength',
             'volume' => 'volume',
-            'brandSeq' => 'brand_seq',
-            'bottlerBrandSeq' => 'bottler_brand_seq',
-            'importerSeq' => 'importer_seq',
+            'brandId' => 'brand_id',
+            'bottlerBrandId' => 'bottler_brand_id',
+            'importerId' => 'importer_id',
             'createdAt' => 'created_at',
             'updatedAt' => 'updated_at',
         ];
@@ -77,28 +77,28 @@ class BottleModel extends Model {
         // create join and add it
 
         $brandJoin = new Join('', 'b', 'brand',
-            ['bSeq' => 'seq', 'distillerySeq' => 'distillery_seq', 'brandName' => 'name'], // no same name allowed
-            ['bSeq', 'brandSeq']);
+            ['bId' => 'id', 'distilleryId' => 'distillery_id', 'brandName' => 'name'], // no same name allowed
+            ['bId', 'brandId']);
         $this->join($brandJoin);
 
         $distilleryJoin = new Join('', 'c', 'distillery',
-            ['cSeq' => 'seq', 'distilleryName' => 'name', 'country' => 'country', 'region' => 'region'],
-            ['cSeq', 'distillerySeq']);
+            ['cId' => 'id', 'distilleryName' => 'name', 'country' => 'country', 'region' => 'region'],
+            ['cId', 'distilleryId']);
         $this->join($distilleryJoin);
 
         $bottlerBrandJoin = new Join('LEFT', 'd', 'bottler_brand',
-            ['dSeq' => 'seq', 'bottlerSeq' => 'bottler_seq', 'bottlerBrandName' => 'name'],
-            ['dSeq', 'bottlerBrandSeq']);
+            ['dId' => 'id', 'bottlerId' => 'bottler_id', 'bottlerBrandName' => 'name'],
+            ['dId', 'bottlerBrandId']);
         $this->join($bottlerBrandJoin);
 
         $bottlerJoin = new Join('LEFT', 'e', 'bottler',
-            ['eSeq' => 'seq', 'bottlerName' => 'name', 'bottlerCountry' => 'country'],
-            ['eSeq', 'bottlerSeq']);
+            ['eId' => 'id', 'bottlerName' => 'name', 'bottlerCountry' => 'country'],
+            ['eId', 'bottlerId']);
         $this->join($bottlerJoin);
 
         $importerJoin = new Join('LEFT', 'f', 'importer',
-            ['fSeq' => 'seq', 'importerName' => 'name', 'importerCountry' => 'country'],
-            ['fSeq', 'importerSeq']);
+            ['fId' => 'id', 'importerName' => 'name', 'importerCountry' => 'country'],
+            ['fId', 'importerId']);
         $this->join($importerJoin);
 
     }

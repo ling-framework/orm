@@ -1,5 +1,5 @@
 CREATE TABLE bottler (
- seq integer PRIMARY KEY,
+ id integer PRIMARY KEY,
  name text NOT NULL,
  country text NOT NULL,
  created_at text NOT NULL,

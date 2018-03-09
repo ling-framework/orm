@@ -1,5 +1,5 @@
 CREATE TABLE distillery (
- seq integer PRIMARY KEY,
+ id integer PRIMARY KEY,
  name text NOT NULL,
  country text NOT NULL,
  region text,

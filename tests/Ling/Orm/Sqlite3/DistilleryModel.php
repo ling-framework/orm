@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Ling\Orm\Sqlite3;
 
 class DistilleryModel extends Model {
-    public $seq;
+    public $id;
     public $name;
     public $country;
     public $region;
@@ -13,9 +13,9 @@ class DistilleryModel extends Model {
 
     public function init() {
         $this->orm->tableName = 'distillery';
-        $this->orm->pk = 'seq';
+        $this->orm->pk = 'id';
         $this->orm->columns = [
-            'seq' => 'seq',
+            'id' => 'id',
             'name' => 'name',
             'country' => 'country',
             'region' => 'region',

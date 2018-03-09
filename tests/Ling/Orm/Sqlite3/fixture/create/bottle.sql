@@ -1,5 +1,5 @@
 CREATE TABLE bottle (
- seq integer PRIMARY KEY,
+ id integer PRIMARY KEY,
  name text NOT NULL,
  liquor_type text NOT NULL,
  cask_type text,
@@ -7,9 +7,9 @@ CREATE TABLE bottle (
  age integer,
  strength real NOT NULL,
  volume int NOT NULL,
- brand_seq integer,
- bottler_brand_seq integer,
- importer_seq integer,
+ brand_id integer,
+ bottler_brand_id integer,
+ importer_id integer,
  created_at text NOT NULL,
  updated_at text NOT NULL
 )

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Ling\Orm\Sqlite3;
 
 class StockModel extends Model {
-    public $seq;
-    public $bottleSeq;
-    public $shopSeq;
+    public $id;
+    public $bottleId;
+    public $shopId;
     public $stock;
     public $price;
     public $createdAt;
@@ -15,11 +15,11 @@ class StockModel extends Model {
 
     public function init() {
         $this->orm->tableName = 'stock';
-        $this->orm->pk = 'seq';
+        $this->orm->pk = 'id';
         $this->orm->columns = [
-            'seq' => 'seq',
-            'bottleSeq' => 'bottle_seq',
-            'shopSeq' => 'shop_seq',
+            'id' => 'id',
+            'bottleId' => 'bottle_id',
+            'shopId' => 'shop_id',
             'stock' => 'stock',
             'price' => 'price',
             'createdAt' => 'created_at',
