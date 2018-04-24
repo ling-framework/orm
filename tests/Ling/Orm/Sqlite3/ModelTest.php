@@ -19,7 +19,7 @@ include 'bootstrap.php';
 class ModelTest extends TestCase
 {
     public function setUp() {
-        config([ORM::PDO_KEY => pdo(':memory:')]);
+        config([Orm::PDO_KEY => pdo(':memory:')]);
 
         $dao = new Model();
 

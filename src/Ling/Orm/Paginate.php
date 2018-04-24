@@ -2,7 +2,7 @@
 namespace Ling\Orm;
 
 
-abstract class Paginate { // provide improved pagination
+class Paginate { // provide improved pagination
     // input for pagination
     const DEFAULT_CURRENT_PAGE = 10; // can be overrided
     const DEFAULT_LIST_SIZE = 10;
@@ -43,7 +43,10 @@ abstract class Paginate { // provide improved pagination
     }
 
     public function setList($list){$this->list = $list;}
-    abstract public function setTotalCount($totalCount); // you can set internal values by totalCount. there was html() for template, but removed because we only use json
+    public function setTotalCount($totalCount) { // you can set internal values by totalCount. there was html() for template, but removed because we only use json
+       $this->totalCount = $totalCount;
+    }
+
     public function json() {
         return json_encode($this->plainObject());
     }
