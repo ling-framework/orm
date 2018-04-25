@@ -325,8 +325,8 @@ class Orm {
         if ($this->joins) {
             $sqlColumns = ', ' . sqlColumns($this->customColumns, $this->prefixedColumns);
         }
-        $sql = 'SELECT count(*) AS totalCount' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere;
-        return $this->fetch($sql, $this->vars['params'])->totalCount;
+        $sql = 'SELECT count(*) AS totalCount ' . $sqlColumns . ' FROM ' . $sqlFroms . $sqlWhere;
+        return (int)$this->fetch($sql, $this->vars['params'])->totalCount;
 
     }
 
