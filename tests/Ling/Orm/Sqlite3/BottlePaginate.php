@@ -8,31 +8,31 @@ use Ling\Orm\Paginate;
 class BottlePaginate extends Paginate {
 
     public function setTotalCount($totalCount) {
-        $this->listSize = 5;
+        $this->pagesPerPagination = 5;
 
         $this->totalCount = $totalCount;
 
-        if ($this->currentPage < 1 || $this->totalCount < 1 || $this->totalCount < (($this->currentPage - 1)*$this->paginationSize)) { // we don't need to search
-            $this->validIndex = false;
+        if ($this->page < 1 || $this->totalCount < 1 || $this->totalCount < (($this->page - 1)*$this->rowsPerPage)) { // we don't need to search
+            $this->isValidPage = false;
             return;
         }
-        $this->validIndex = true;
-        $this->totalPage = (int)($this->totalCount/$this->paginationSize) + (($this->totalCount % $this->paginationSize === 0) ? 0 : 1);
+        $this->isValidPage = true;
+        $this->totalPage = (int)($this->totalCount/$this->rowsPerPage) + (($this->totalCount % $this->rowsPerPage === 0) ? 0 : 1);
 
         if ($this->endAt > $this->totalCount) {
             $this->endAt = $this->totalCount;
         }
 
-        $this->prev = $this->currentPage - 1;
-        $this->next = $this->currentPage + 1;
+        $this->prev = $this->page - 1;
+        $this->next = $this->page + 1;
 
-        $this->startPage = (($this->currentPage - $this->listSize) < 1) ? 1 : ($this->currentPage - $this->listSize);
-        if (($this->totalPage > ($this->listSize*2 + 3)) && ($this->startPage > $this->totalPage - $this->listSize*2 - 1)) {
-            $this->startPage = $this->totalPage - $this->listSize*2 - 1;
+        $this->startPage = (($this->page - $this->pagesPerPagination) < 1) ? 1 : ($this->page - $this->pagesPerPagination);
+        if (($this->totalPage > ($this->pagesPerPagination*2 + 3)) && ($this->startPage > $this->totalPage - $this->pagesPerPagination*2 - 1)) {
+            $this->startPage = $this->totalPage - $this->pagesPerPagination*2 - 1;
         }
-        $this->endPage = (($this->currentPage + $this->listSize) > $this->totalPage) ? $this->totalPage : ($this->currentPage + $this->listSize);
-        if ($this->totalPage > ($this->listSize*2 + 3) && $this->endPage < ($this->listSize*2 + 1)) {
-            $this->endPage = $this->listSize*2 + 1;
+        $this->endPage = (($this->page + $this->pagesPerPagination) > $this->totalPage) ? $this->totalPage : ($this->page + $this->pagesPerPagination);
+        if ($this->totalPage > ($this->pagesPerPagination*2 + 3) && $this->endPage < ($this->pagesPerPagination*2 + 1)) {
+            $this->endPage = $this->pagesPerPagination*2 + 1;
         }
         if ($this->next > $this->endPage) {
             $this->next = null;
@@ -46,14 +46,14 @@ class BottlePaginate extends Paginate {
 
     public function html($condition) {
         $html = '';
-        if (!$this->validIndex) {
+        if (!$this->isValidPage) {
             return $html;
         }
         if ($this->prev) {
             $html .= "<a class='pagination-prev' href='?" . $condition . '&pno=' . $this->prev . "'>&lt; Prev<span class='page-next'></span></a>";
         }
         for ($i = $this->startPage; $i <= $this->endPage; $i++) {
-            if ($this->currentPage === $i) {
+            if ($this->page === $i) {
                 $html .= "<span class='current'>" . $i . '</span>';
             } else {
                 $html .= "<a class='inactive' href='?" . $condition . '&pno=' . $i . "'>" . $i . '</a>';

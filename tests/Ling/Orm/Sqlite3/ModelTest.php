@@ -160,10 +160,10 @@ class ModelTest extends TestCase
 
     public function testPaginate() {
         $dao = new BottleModel();
-        $paginate = new BottlePaginate(1);
+        $paginate = new BottlePaginate(1, 5);
         $paginate = $dao->orderBy('id')->paginate($paginate);
         $this->assertEquals(33, $paginate->totalCount);
-        $this->assertCount(5, $paginate->list);
+        $this->assertCount(5, $paginate->items);
     }
 
     public function testOneToMany() {

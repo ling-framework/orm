@@ -459,11 +459,11 @@ class Orm {
 
     public function paginate(Paginate $paginate) : Paginate
     {
-        $this->limit($paginate->startAt, $paginate->paginationSize);
+        $this->limit($paginate->startAt, $paginate->rowsPerPage);
         $totalCount = $this->selectCount();
         $paginate->setTotalCount($totalCount);
         $sql = $this->generateSelectSql();
-        $paginate->setList($this->fetch($sql, $this->vars['params'], true));
+        $paginate->setItems($this->fetch($sql, $this->vars['params'], true));
         return $paginate;
     }
 
