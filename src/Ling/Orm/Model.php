@@ -9,8 +9,10 @@
 namespace Ling\Orm;
 
 class Model {
-    public $rowNumber; // for pagination
-    public $totalCount; // for pagination
+    // these fields are for some db i.e. SQL Server 2008
+    // delete it for now
+    //public $rowNumber; // for pagination
+    //public $totalCount; // for pagination
 
     /** @var $orm Orm */
     protected $orm;
