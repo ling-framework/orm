@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Ling\Orm\Sqlite3;
 
 use PHPUnit\Framework\TestCase;
-use function Ling\config;
+use function Ling\env;
 
 include 'bootstrap.php';
 
@@ -19,7 +19,7 @@ include 'bootstrap.php';
 class ModelTest extends TestCase
 {
     public function setUp() {
-        config([Orm::PDO_KEY => pdo(':memory:')]);
+        env([Orm::PDO_KEY => pdo(':memory:')]);
 
         $dao = new Model();
 

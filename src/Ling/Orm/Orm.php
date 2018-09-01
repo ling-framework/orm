@@ -1,7 +1,7 @@
 <?php
 namespace Ling\Orm;
 
-use function \Ling\config;
+use function \Ling\env;
 
 // base is mysql
 // we remove encryption field. it may be better to make SecureOrm or so to provide full secure functionality
@@ -47,7 +47,7 @@ class Orm {
 
     public function __construct()
     {
-        $this->pdo = config($this::PDO_KEY);
+        $this->pdo = env($this::PDO_KEY);
     }
 
     public function init($className) {
