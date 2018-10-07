@@ -321,6 +321,7 @@ class Orm {
     {
         $sqlFroms = sqlFroms($this->tableName, $this->joins);
         $sqlWhere = sqlWhere($this->vars['wheres']);
+        $sqlGroupBy = sqlGroupBy($this->vars['groupBys']);
         $sqlColumns = '';
         if ($this->joins) {
             $sqlColumns = ', ' . sqlColumns($this->customColumns, $this->prefixedColumns);
